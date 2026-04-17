@@ -3,13 +3,18 @@ import { useCustomer } from "@/features/customers/hooks";
 import { useInvoicesForCustomer } from "@/features/invoices/hooks";
 import { useSalesOrdersForCustomer } from "@/features/sales-orders/hooks";
 import { useOnlineOrdersForEmail } from "@/features/online-orders/hooks";
+import {
+  useCreditNotesForCustomer,
+  useCustomerCreditBalance,
+} from "@/features/refunds/hooks";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTable } from "@/components/data/DataTable";
 import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
+import { Badge } from "@/components/ui/badge";
+import { Wallet, ChevronRight } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import { ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetail,
