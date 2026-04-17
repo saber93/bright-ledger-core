@@ -38,6 +38,7 @@ import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
+import { Route as ApiDocumentsPosReceiptIdRouteImport } from './routes/api.documents.pos-receipt.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -195,6 +196,12 @@ const AuthenticatedAccountingCoaRoute =
     path: '/accounting/coa',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiDocumentsPosReceiptIdRoute =
+  ApiDocumentsPosReceiptIdRouteImport.update({
+    id: '/api/documents/pos-receipt/$id',
+    path: '/api/documents/pos-receipt/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -254,6 +262,7 @@ export interface FileRoutesByTo {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -286,6 +295,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/store/$orderId'
     | '/settings/'
+    | '/api/documents/pos-receipt/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/store/$orderId'
     | '/settings'
+    | '/api/documents/pos-receipt/$id'
   id:
     | '__root__'
     | '/'
@@ -378,6 +390,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
     | '/_authenticated/settings/'
+    | '/api/documents/pos-receipt/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -385,6 +398,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiDocumentsPosReceiptIdRoute: typeof ApiDocumentsPosReceiptIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -592,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountingCoaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/documents/pos-receipt/$id': {
+      id: '/api/documents/pos-receipt/$id'
+      path: '/api/documents/pos-receipt/$id'
+      fullPath: '/api/documents/pos-receipt/$id'
+      preLoaderRoute: typeof ApiDocumentsPosReceiptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -714,6 +735,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiDocumentsPosReceiptIdRoute: ApiDocumentsPosReceiptIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
