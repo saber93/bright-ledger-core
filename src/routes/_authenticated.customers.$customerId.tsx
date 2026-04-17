@@ -216,6 +216,84 @@ function CustomerDetail() {
             ]}
           />
         </TabsContent>
+
+        <TabsContent value="credits" className="mt-4">
+          <div className="mb-4 rounded-xl border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Current store credit
+                </p>
+                <MoneyDisplay
+                  value={balance}
+                  currency={balanceCurrency}
+                  className="mt-1 text-2xl font-semibold"
+                />
+              </div>
+              <Wallet className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Balance updates automatically when credit notes are allocated to customer credit
+              or when credit is applied to invoices.
+            </p>
+          </div>
+
+          <DataTable
+            data={creditNotes}
+            onRowClick={(r) => {
+              window.location.href = `/refunds/${r.id}`;
+            }}
+            emptyState={
+              <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+                No credit notes for this customer yet.
+              </div>
+            }
+            columns={[
+              {
+                key: "number",
+                header: "Number",
+                cell: (r) => <span className="font-mono text-xs">{r.credit_note_number}</span>,
+              },
+              { key: "date", header: "Issued", cell: (r) => formatDate(r.issue_date) },
+              {
+                key: "source",
+                header: "Source",
+                cell: (r) => {
+                  type SrcRow = typeof r & {
+                    customer_invoices: { invoice_number: string } | null;
+                    pos_orders: { order_number: string } | null;
+                  };
+                  const row = r as SrcRow;
+                  const label =
+                    row.customer_invoices?.invoice_number ??
+                    row.pos_orders?.order_number ??
+                    "—";
+                  return (
+                    <span className="text-xs">
+                      <span className="capitalize text-muted-foreground">{r.source_type}</span>
+                      <span className="ml-1 font-mono">{label}</span>
+                    </span>
+                  );
+                },
+              },
+              {
+                key: "status",
+                header: "Status",
+                cell: (r) => (
+                  <Badge variant="secondary" className="capitalize">
+                    {String(r.status).replace("_", " ")}
+                  </Badge>
+                ),
+              },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                cell: (r) => <MoneyDisplay value={r.total} currency={balanceCurrency} />,
+              },
+            ]}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
