@@ -32,8 +32,13 @@ import {
   ShoppingBag,
   BarChart3,
   ClipboardList,
+  Wallet,
+  Banknote,
+  Receipt as ReceiptIcon,
+  Undo2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCompanySettings } from "@/features/settings/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,21 +93,36 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+interface NavItemDef extends NavItem {
+  flag?:
+    | "pos_enabled"
+    | "refunds_enabled"
+    | "cash_sessions_enabled"
+    | "quick_expenses_enabled";
+}
+
 const dashGroup: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 
-const accountingGroup: NavItem[] = [
+const salesGroup: NavItemDef[] = [
+  { label: "POS", href: "/pos", icon: Wallet, flag: "pos_enabled" },
+  { label: "Sales Orders", href: "/sales", icon: ClipboardList },
   { label: "Customer Invoices", href: "/invoices", icon: FileText },
+  { label: "Refunds", href: "/refunds", icon: Undo2, flag: "refunds_enabled" },
+  { label: "Customers", href: "/customers", icon: Users },
+];
+
+const accountingGroup: NavItemDef[] = [
   { label: "Supplier Bills", href: "/bills", icon: Receipt },
   { label: "Payments", href: "/payments", icon: CreditCard },
-  { label: "Customers", href: "/customers", icon: Users },
+  { label: "Quick Expenses", href: "/quick-expenses", icon: ReceiptIcon, flag: "quick_expenses_enabled" },
   { label: "Suppliers", href: "/suppliers", icon: Truck },
   { label: "Chart of Accounts", href: "/accounting/coa", icon: BookOpen },
 ];
 
-const opsGroup: NavItem[] = [
-  { label: "Sales Orders", href: "/sales", icon: ClipboardList },
+const opsGroup: NavItemDef[] = [
+  { label: "Cash Sessions", href: "/cash-sessions", icon: Banknote, flag: "cash_sessions_enabled" },
   { label: "Products & Inventory", href: "/inventory", icon: Package },
   { label: "Online Store", href: "/store", icon: ShoppingBag },
   { label: "Reports", href: "/reports", icon: BarChart3 },
@@ -114,6 +134,10 @@ const settingsGroup: NavItem[] = [
 
 function AppSidebar() {
   const location = useLocation();
+  const { data: settings } = useCompanySettings();
+
+  const filterByFlag = (items: NavItemDef[]) =>
+    items.filter((i) => !i.flag || settings?.[i.flag]);
 
   const renderItem = (item: NavItem) => {
     const Icon = item.icon;
@@ -151,16 +175,23 @@ function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
+          <SidebarGroupLabel>Sales</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{filterByFlag(salesGroup).map(renderItem)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
           <SidebarGroupLabel>Accounting</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{accountingGroup.map(renderItem)}</SidebarMenu>
+            <SidebarMenu>{filterByFlag(accountingGroup).map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>Operations</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{opsGroup.map(renderItem)}</SidebarMenu>
+            <SidebarMenu>{filterByFlag(opsGroup).map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -173,7 +204,7 @@ function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-t">
         <div className="px-2 py-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-          v1.0 · Foundation
+          v1.1 · SME Operations
         </div>
       </SidebarFooter>
     </Sidebar>
