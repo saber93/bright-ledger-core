@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
 import { PageHeader } from "@/components/data/PageHeader";
 import { cn } from "@/lib/utils";
+import { useCompanySettings } from "@/features/settings/hooks";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
@@ -8,11 +9,15 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsLayout() {
   const loc = useLocation();
+  const { data: settings } = useCompanySettings();
+
   const tabs = [
-    { href: "/settings", label: "Company" },
-    { href: "/settings/modules", label: "Modules & Features" },
-    { href: "/settings/users", label: "Users & Roles" },
-  ];
+    { href: "/settings", label: "Company", show: true },
+    { href: "/settings/modules", label: "Modules & Features", show: true },
+    { href: "/settings/users", label: "Users & Roles", show: true },
+    { href: "/settings/branches", label: "Branches & Registers", show: !!settings?.pos_enabled || !!settings?.cash_sessions_enabled },
+    { href: "/settings/tax-rates", label: "Tax Rates", show: !!settings?.tax_reporting_enabled },
+  ].filter((t) => t.show);
 
   // Render tab navigation + outlet. If at /settings root, show company info section.
   return (
