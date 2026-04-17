@@ -111,7 +111,7 @@ function ProductDetailPage() {
         <MetricCard
           label="On hand"
           value={tracksStock ? `${total_stock} ${product.unit}` : "Not tracked"}
-          tone={is_low_stock ? "danger" : "default"}
+          accent={is_low_stock ? "danger" : "primary"}
           icon={is_low_stock ? <AlertTriangle className="h-4 w-4" /> : undefined}
         />
         <MetricCard label="Reorder point" value={`${Number(product.reorder_point)} ${product.unit}`} />

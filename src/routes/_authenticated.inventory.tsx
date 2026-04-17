@@ -71,7 +71,7 @@ function InventoryPage() {
         <MetricCard
           label="Low stock"
           value={lowStockCount.toString()}
-          tone={lowStockCount > 0 ? "danger" : "default"}
+          accent={lowStockCount > 0 ? "danger" : "primary"}
           icon={lowStockCount > 0 ? <AlertTriangle className="h-4 w-4" /> : undefined}
         />
       </div>
