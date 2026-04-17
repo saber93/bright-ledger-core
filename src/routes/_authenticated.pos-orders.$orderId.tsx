@@ -188,6 +188,8 @@ function PosOrderDetailPage() {
             </CardContent>
           </Card>
 
+          <RefundsHistory source="pos" sourceId={order.id} currency={currency} />
+
           {invoice && (
             <Card>
               <CardHeader>
