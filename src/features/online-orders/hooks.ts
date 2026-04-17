@@ -64,6 +64,24 @@ export function useOnlineOrders() {
   });
 }
 
+export function useOnlineOrdersForEmail(email: string | null | undefined) {
+  const { companyId } = useAuth();
+  return useQuery({
+    queryKey: ["online-orders-email", companyId, email],
+    enabled: !!companyId && !!email,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("online_orders")
+        .select("*")
+        .eq("company_id", companyId!)
+        .ilike("customer_email", email!)
+        .order("placed_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as OnlineOrder[];
+    },
+  });
+}
+
 export function useOnlineOrder(id: string | undefined) {
   return useQuery({
     queryKey: ["online-order", id],
