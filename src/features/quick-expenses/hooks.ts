@@ -2,7 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-export type QuickExpenseMethod = "cash" | "card" | "bank_transfer" | "other";
+export type QuickExpenseMethod =
+  | "cash"
+  | "bank"
+  | "card"
+  | "petty_cash"
+  | "unpaid"
+  | "other";
 
 export interface QuickExpenseRow {
   id: string;
@@ -166,14 +172,15 @@ export function useUpsertQuickExpense() {
       }
 
       const expense_number = await nextExpenseNumber(companyId);
+      const insertRow = {
+        ...payload,
+        company_id: companyId,
+        created_by: user?.id ?? null,
+        expense_number,
+      };
       const { data, error } = await supabase
         .from("quick_expenses")
-        .insert({
-          ...payload,
-          company_id: companyId,
-          created_by: user?.id,
-          expense_number,
-        })
+        .insert(insertRow)
         .select("id")
         .single();
       if (error) throw error;
