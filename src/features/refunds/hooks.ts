@@ -354,25 +354,26 @@ export function useCreateRefundMutation() {
       const number = await nextCreditNoteNumber(companyId);
 
       // ---- credit note ----
+      const noteInsert = {
+        company_id: companyId,
+        credit_note_number: number,
+        source_type: input.source_type,
+        source_invoice_id: input.source_invoice_id ?? null,
+        source_pos_order_id: input.source_pos_order_id ?? null,
+        customer_id: input.customer_id,
+        reason: input.reason,
+        notes: input.notes ?? null,
+        restock: input.restock,
+        status: "issued" as const,
+        subtotal,
+        tax_total: taxTotal,
+        total,
+        amount_allocated: total,
+        created_by: user?.id ?? null,
+      };
       const { data: note, error: nErr } = await supabase
         .from("credit_notes")
-        .insert({
-          company_id: companyId,
-          credit_note_number: number,
-          source_type: input.source_type,
-          source_invoice_id: input.source_invoice_id ?? null,
-          source_pos_order_id: input.source_pos_order_id ?? null,
-          customer_id: input.customer_id,
-          reason: input.reason,
-          notes: input.notes ?? null,
-          restock: input.restock,
-          status: "issued",
-          subtotal,
-          tax_total: taxTotal,
-          total,
-          amount_allocated: total,
-          created_by: user?.id,
-        })
+        .insert(noteInsert)
         .select("id")
         .single();
       if (nErr) throw nErr;
