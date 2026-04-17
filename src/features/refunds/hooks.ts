@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-export type CreditNoteSource = "invoice" | "pos_order" | "manual";
-export type CreditNoteStatus = "draft" | "issued" | "applied" | "void";
+export type CreditNoteSource = "invoice" | "pos" | "manual";
+export type CreditNoteStatus = "draft" | "issued" | "partially_settled" | "settled" | "void";
 export type AllocationTarget = "invoice" | "customer_credit" | "cash_refund";
 
 export interface CreditNoteRow {
