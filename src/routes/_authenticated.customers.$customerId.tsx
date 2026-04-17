@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCustomer } from "@/features/customers/hooks";
 import { useInvoicesForCustomer } from "@/features/invoices/hooks";
+import { useSalesOrdersForCustomer } from "@/features/sales-orders/hooks";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTable } from "@/components/data/DataTable";
@@ -17,6 +18,7 @@ function CustomerDetail() {
   const { customerId } = Route.useParams();
   const { data: customer, isLoading } = useCustomer(customerId);
   const { data: invoices } = useInvoicesForCustomer(customerId);
+  const { data: salesOrders } = useSalesOrdersForCustomer(customerId);
 
   if (isLoading) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
   if (!customer) return <div className="py-10 text-sm text-muted-foreground">Not found.</div>;
@@ -40,6 +42,7 @@ function CustomerDetail() {
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="orders">Sales orders ({salesOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="invoices">Invoices ({invoices?.length ?? 0})</TabsTrigger>
         </TabsList>
 
@@ -58,6 +61,40 @@ function CustomerDetail() {
               <p className="mt-2 text-sm text-muted-foreground">{customer.notes}</p>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="orders" className="mt-4">
+          <DataTable
+            data={salesOrders}
+            onRowClick={(r) => {
+              window.location.href = `/sales/${r.id}`;
+            }}
+            emptyState={
+              <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+                No sales orders for this customer yet.
+              </div>
+            }
+            columns={[
+              {
+                key: "number",
+                header: "Number",
+                cell: (r) => <span className="font-mono text-xs">{r.order_number}</span>,
+              },
+              { key: "date", header: "Order date", cell: (r) => formatDate(r.order_date) },
+              {
+                key: "delivery",
+                header: "Expected",
+                cell: (r) => formatDate(r.expected_delivery_date),
+              },
+              { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                cell: (r) => <MoneyDisplay value={r.total} currency={r.currency} />,
+              },
+            ]}
+          />
         </TabsContent>
 
         <TabsContent value="invoices" className="mt-4">

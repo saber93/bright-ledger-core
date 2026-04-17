@@ -63,6 +63,22 @@ export function useSalesOrders() {
   });
 }
 
+export function useSalesOrdersForCustomer(customerId: string | undefined) {
+  return useQuery({
+    queryKey: ["customer-sales-orders", customerId],
+    enabled: !!customerId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sales_orders")
+        .select("*")
+        .eq("customer_id", customerId!)
+        .order("order_date", { ascending: false });
+      if (error) throw error;
+      return data as SalesOrder[];
+    },
+  });
+}
+
 export function useSalesOrder(id: string | undefined) {
   return useQuery({
     queryKey: ["sales-order", id],
