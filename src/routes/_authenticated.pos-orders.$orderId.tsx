@@ -8,6 +8,7 @@ import { usePosOrder } from "@/features/pos/hooks";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { ArrowLeft, FileText, Printer } from "lucide-react";
+import { RefundsHistory } from "@/components/refunds/RefundsHistory";
 
 export const Route = createFileRoute("/_authenticated/pos-orders/$orderId")({
   component: PosOrderDetailPage,
@@ -186,6 +187,8 @@ function PosOrderDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          <RefundsHistory source="pos" sourceId={order.id} currency={currency} />
 
           {invoice && (
             <Card>

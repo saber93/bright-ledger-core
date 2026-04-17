@@ -3,13 +3,18 @@ import { useCustomer } from "@/features/customers/hooks";
 import { useInvoicesForCustomer } from "@/features/invoices/hooks";
 import { useSalesOrdersForCustomer } from "@/features/sales-orders/hooks";
 import { useOnlineOrdersForEmail } from "@/features/online-orders/hooks";
+import {
+  useCreditNotesForCustomer,
+  useCustomerCreditBalance,
+} from "@/features/refunds/hooks";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTable } from "@/components/data/DataTable";
 import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
+import { Badge } from "@/components/ui/badge";
+import { Wallet, ChevronRight } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import { ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetail,
@@ -21,9 +26,14 @@ function CustomerDetail() {
   const { data: invoices } = useInvoicesForCustomer(customerId);
   const { data: salesOrders } = useSalesOrdersForCustomer(customerId);
   const { data: onlineOrders } = useOnlineOrdersForEmail(customer?.email);
+  const { data: creditBalance } = useCustomerCreditBalance(customerId);
+  const { data: creditNotes } = useCreditNotesForCustomer(customerId);
 
   if (isLoading) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
   if (!customer) return <div className="py-10 text-sm text-muted-foreground">Not found.</div>;
+
+  const balance = Number(creditBalance?.balance ?? 0);
+  const balanceCurrency = creditBalance?.currency ?? customer.currency ?? "USD";
 
   return (
     <div>
@@ -41,12 +51,56 @@ function CustomerDetail() {
         }
       />
 
+      <div className="mb-5 grid gap-3 md:grid-cols-3">
+        <div
+          className={`rounded-xl border p-5 ${
+            balance > 0 ? "border-primary/40 bg-primary/5" : "bg-card"
+          }`}
+        >
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Wallet className="h-3.5 w-3.5" /> Store credit balance
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <MoneyDisplay
+              value={balance}
+              currency={balanceCurrency}
+              className={`text-2xl font-semibold ${balance > 0 ? "text-primary" : "text-foreground"}`}
+            />
+            {balance > 0 && (
+              <Badge variant="secondary" className="text-[10px]">
+                Available
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            From issued credit notes allocated to customer credit.
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Open invoices
+          </div>
+          <div className="mt-2 text-2xl font-semibold">
+            {(invoices ?? []).filter((i) => i.status !== "paid" && i.status !== "cancelled").length}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Across all invoices.</p>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Credit notes
+          </div>
+          <div className="mt-2 text-2xl font-semibold">{creditNotes?.length ?? 0}</div>
+          <p className="mt-1 text-xs text-muted-foreground">Refunds & credits issued.</p>
+        </div>
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="orders">Sales orders ({salesOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="online">Online orders ({onlineOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="invoices">Invoices ({invoices?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="credits">Credits & refunds ({creditNotes?.length ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -158,6 +212,84 @@ function CustomerDetail() {
                 header: "Total",
                 align: "right",
                 cell: (r) => <MoneyDisplay value={r.total} currency={r.currency} />,
+              },
+            ]}
+          />
+        </TabsContent>
+
+        <TabsContent value="credits" className="mt-4">
+          <div className="mb-4 rounded-xl border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Current store credit
+                </p>
+                <MoneyDisplay
+                  value={balance}
+                  currency={balanceCurrency}
+                  className="mt-1 text-2xl font-semibold"
+                />
+              </div>
+              <Wallet className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Balance updates automatically when credit notes are allocated to customer credit
+              or when credit is applied to invoices.
+            </p>
+          </div>
+
+          <DataTable
+            data={creditNotes}
+            onRowClick={(r) => {
+              window.location.href = `/refunds/${r.id}`;
+            }}
+            emptyState={
+              <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+                No credit notes for this customer yet.
+              </div>
+            }
+            columns={[
+              {
+                key: "number",
+                header: "Number",
+                cell: (r) => <span className="font-mono text-xs">{r.credit_note_number}</span>,
+              },
+              { key: "date", header: "Issued", cell: (r) => formatDate(r.issue_date) },
+              {
+                key: "source",
+                header: "Source",
+                cell: (r) => {
+                  type SrcRow = typeof r & {
+                    customer_invoices: { invoice_number: string } | null;
+                    pos_orders: { order_number: string } | null;
+                  };
+                  const row = r as SrcRow;
+                  const label =
+                    row.customer_invoices?.invoice_number ??
+                    row.pos_orders?.order_number ??
+                    "—";
+                  return (
+                    <span className="text-xs">
+                      <span className="capitalize text-muted-foreground">{r.source_type}</span>
+                      <span className="ml-1 font-mono">{label}</span>
+                    </span>
+                  );
+                },
+              },
+              {
+                key: "status",
+                header: "Status",
+                cell: (r) => (
+                  <Badge variant="secondary" className="capitalize">
+                    {String(r.status).replace("_", " ")}
+                  </Badge>
+                ),
+              },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                cell: (r) => <MoneyDisplay value={r.total} currency={balanceCurrency} />,
               },
             ]}
           />

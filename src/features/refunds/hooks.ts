@@ -173,6 +173,24 @@ export function useRefundsForPosOrder(posOrderId: string | undefined) {
   });
 }
 
+export function useCreditNotesForCustomer(customerId: string | undefined) {
+  return useQuery({
+    queryKey: ["credit-notes-by-customer", customerId],
+    enabled: !!customerId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("credit_notes")
+        .select(
+          "id, credit_note_number, total, status, issue_date, source_type, amount_allocated, customer_invoices:source_invoice_id(invoice_number), pos_orders:source_pos_order_id(order_number)",
+        )
+        .eq("customer_id", customerId!)
+        .order("issue_date", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
 export function useCustomerCreditBalance(customerId: string | undefined) {
   return useQuery({
     queryKey: ["customer-credit-balance", customerId],
