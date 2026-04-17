@@ -26,9 +26,14 @@ function CustomerDetail() {
   const { data: invoices } = useInvoicesForCustomer(customerId);
   const { data: salesOrders } = useSalesOrdersForCustomer(customerId);
   const { data: onlineOrders } = useOnlineOrdersForEmail(customer?.email);
+  const { data: creditBalance } = useCustomerCreditBalance(customerId);
+  const { data: creditNotes } = useCreditNotesForCustomer(customerId);
 
   if (isLoading) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
   if (!customer) return <div className="py-10 text-sm text-muted-foreground">Not found.</div>;
+
+  const balance = Number(creditBalance?.balance ?? 0);
+  const balanceCurrency = creditBalance?.currency ?? customer.currency ?? "USD";
 
   return (
     <div>
