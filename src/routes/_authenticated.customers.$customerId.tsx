@@ -100,6 +100,42 @@ function CustomerDetail() {
           />
         </TabsContent>
 
+        <TabsContent value="online" className="mt-4">
+          <DataTable
+            data={onlineOrders}
+            onRowClick={(r) => {
+              window.location.href = `/store/${r.id}`;
+            }}
+            emptyState={
+              <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+                {customer.email
+                  ? "No online orders matched this customer's email."
+                  : "Add an email to this customer to match online orders."}
+              </div>
+            }
+            columns={[
+              {
+                key: "number",
+                header: "Number",
+                cell: (r) => <span className="font-mono text-xs">{r.order_number}</span>,
+              },
+              { key: "placed", header: "Placed", cell: (r) => formatDate(r.placed_at) },
+              {
+                key: "name",
+                header: "Name on order",
+                cell: (r) => <span className="text-sm">{r.customer_name}</span>,
+              },
+              { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                cell: (r) => <MoneyDisplay value={r.total} currency={r.currency} />,
+              },
+            ]}
+          />
+        </TabsContent>
+
         <TabsContent value="invoices" className="mt-4">
           <DataTable
             data={invoices}
