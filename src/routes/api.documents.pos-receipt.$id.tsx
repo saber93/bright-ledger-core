@@ -4,9 +4,8 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const Route = createFileRoute("/api/documents/pos-receipt/$id")({
   server: {
     handlers: {
-      GET: async ({ params, request }) => {
-        const supabase = createServerClient(request);
-        const { data: order, error } = await supabase
+      GET: async ({ params }) => {
+        const { data: order, error } = await supabaseAdmin
           .from("pos_orders")
           .select("*, pos_order_lines(*), pos_payments(*)")
           .eq("id", params.id)
