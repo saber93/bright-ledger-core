@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedStoreOrderIdRouteImport } from './routes/_authenticated.store.$orderId'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated.settings.users'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
+import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
 
@@ -129,6 +130,12 @@ const AuthenticatedSettingsModulesRoute =
     path: '/modules',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedInventoryProductIdRoute =
+  AuthenticatedInventoryProductIdRouteImport.update({
+    id: '/$productId',
+    path: '/$productId',
+    getParentRoute: () => AuthenticatedInventoryRoute,
+  } as any)
 const AuthenticatedCustomersCustomerIdRoute =
   AuthenticatedCustomersCustomerIdRouteImport.update({
     id: '/$customerId',
@@ -149,7 +156,7 @@ export interface FileRoutesByFullPath {
   '/bills': typeof AuthenticatedBillsRoute
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/inventory': typeof AuthenticatedInventoryRoute
+  '/inventory': typeof AuthenticatedInventoryRouteWithChildren
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
@@ -171,7 +179,7 @@ export interface FileRoutesByTo {
   '/bills': typeof AuthenticatedBillsRoute
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/inventory': typeof AuthenticatedInventoryRoute
+  '/inventory': typeof AuthenticatedInventoryRouteWithChildren
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -180,6 +188,7 @@ export interface FileRoutesByTo {
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
@@ -194,7 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/bills': typeof AuthenticatedBillsRoute
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
+  '/_authenticated/inventory': typeof AuthenticatedInventoryRouteWithChildren
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -204,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/suppliers'
     | '/accounting/coa'
     | '/customers/$customerId'
+    | '/inventory/$productId'
     | '/settings/modules'
     | '/settings/users'
     | '/store/$orderId'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/suppliers'
     | '/accounting/coa'
     | '/customers/$customerId'
+    | '/inventory/$productId'
     | '/settings/modules'
     | '/settings/users'
     | '/store/$orderId'
@@ -272,6 +284,7 @@ export interface FileRouteTypes {
     | '/_authenticated/suppliers'
     | '/_authenticated/accounting/coa'
     | '/_authenticated/customers/$customerId'
+    | '/_authenticated/inventory/$productId'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
@@ -420,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsModulesRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/inventory/$productId': {
+      id: '/_authenticated/inventory/$productId'
+      path: '/$productId'
+      fullPath: '/inventory/$productId'
+      preLoaderRoute: typeof AuthenticatedInventoryProductIdRouteImport
+      parentRoute: typeof AuthenticatedInventoryRoute
+    }
     '/_authenticated/customers/$customerId': {
       id: '/_authenticated/customers/$customerId'
       path: '/$customerId'
@@ -450,6 +470,20 @@ const AuthenticatedCustomersRouteChildren: AuthenticatedCustomersRouteChildren =
 const AuthenticatedCustomersRouteWithChildren =
   AuthenticatedCustomersRoute._addFileChildren(
     AuthenticatedCustomersRouteChildren,
+  )
+
+interface AuthenticatedInventoryRouteChildren {
+  AuthenticatedInventoryProductIdRoute: typeof AuthenticatedInventoryProductIdRoute
+}
+
+const AuthenticatedInventoryRouteChildren: AuthenticatedInventoryRouteChildren =
+  {
+    AuthenticatedInventoryProductIdRoute: AuthenticatedInventoryProductIdRoute,
+  }
+
+const AuthenticatedInventoryRouteWithChildren =
+  AuthenticatedInventoryRoute._addFileChildren(
+    AuthenticatedInventoryRouteChildren,
   )
 
 interface AuthenticatedSettingsRouteChildren {
@@ -484,7 +518,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
+  AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRouteWithChildren
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -499,7 +533,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBillsRoute: AuthenticatedBillsRoute,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
+  AuthenticatedInventoryRoute: AuthenticatedInventoryRouteWithChildren,
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
