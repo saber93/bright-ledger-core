@@ -43,12 +43,21 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Atlas ERP — Modern Accounting & Operations" },
+      { title: "Accounting — Modern Accounting & Operations" },
       {
         name: "description",
         content:
           "Modern accounting and ERP for growing businesses. Invoicing, bills, payments, and reporting — beautifully designed.",
       },
+      { property: "og:title", content: "Accounting — Modern Accounting & Operations" },
+      { name: "twitter:title", content: "Accounting — Modern Accounting & Operations" },
+      { name: "description", content: "Modern Accounting & Operations" },
+      { property: "og:description", content: "Modern Accounting & Operations" },
+      { name: "twitter:description", content: "Modern Accounting & Operations" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Omip0M08sHOuvGFP8X6WMHRYkiM2/social-images/social-1776445380457-Enhance_this_logo_concept_for_Agentic_Systems_AI,_a_UAE-based_artificial_intelligence_company_specializing_in_autonomous_agentic_systems_that_connect_human_insight_and_machine_intelligence.__Design_Goals___Keep_the_sleek,_modern_feel_of_(3).webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Omip0M08sHOuvGFP8X6WMHRYkiM2/social-images/social-1776445380457-Enhance_this_logo_concept_for_Agentic_Systems_AI,_a_UAE-based_artificial_intelligence_company_specializing_in_autonomous_agentic_systems_that_connect_human_insight_and_machine_intelligence.__Design_Goals___Keep_the_sleek,_modern_feel_of_(3).webp" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
