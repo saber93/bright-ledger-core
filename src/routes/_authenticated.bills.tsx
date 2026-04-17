@@ -54,6 +54,9 @@ function BillsPage() {
       <DataTable
         loading={isLoading}
         data={filtered}
+        onRowClick={(r) =>
+          window.open(`/api/documents/bill/${r.id}`, "_blank")
+        }
         emptyState={
           <EmptyState
             icon={<Receipt className="h-5 w-5" />}
