@@ -36,6 +36,7 @@ import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_aut
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
 import { Route as AuthenticatedSettingsBranchesRouteImport } from './routes/_authenticated.settings.branches'
 import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authenticated.sales.$orderId'
+import { Route as AuthenticatedQuickExpensesExpenseIdRouteImport } from './routes/_authenticated.quick-expenses.$expenseId'
 import { Route as AuthenticatedPosOrdersOrderIdRouteImport } from './routes/_authenticated.pos-orders.$orderId'
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
@@ -185,6 +186,12 @@ const AuthenticatedSalesOrderIdRoute =
     path: '/$orderId',
     getParentRoute: () => AuthenticatedSalesRoute,
   } as any)
+const AuthenticatedQuickExpensesExpenseIdRoute =
+  AuthenticatedQuickExpensesExpenseIdRouteImport.update({
+    id: '/$expenseId',
+    path: '/$expenseId',
+    getParentRoute: () => AuthenticatedQuickExpensesRoute,
+  } as any)
 const AuthenticatedPosOrdersOrderIdRoute =
   AuthenticatedPosOrdersOrderIdRouteImport.update({
     id: '/$orderId',
@@ -229,7 +236,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pos': typeof AuthenticatedPosRoute
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
-  '/quick-expenses': typeof AuthenticatedQuickExpensesRoute
+  '/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
   '/refunds': typeof AuthenticatedRefundsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
+  '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -262,7 +270,7 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pos': typeof AuthenticatedPosRoute
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
-  '/quick-expenses': typeof AuthenticatedQuickExpensesRoute
+  '/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
   '/refunds': typeof AuthenticatedRefundsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
@@ -272,6 +280,7 @@ export interface FileRoutesByTo {
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
+  '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -296,7 +305,7 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
-  '/_authenticated/quick-expenses': typeof AuthenticatedQuickExpensesRoute
+  '/_authenticated/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
   '/_authenticated/refunds': typeof AuthenticatedRefundsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
@@ -307,6 +316,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/_authenticated/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
+  '/_authenticated/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/_authenticated/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/_authenticated/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId'
     | '/inventory/$productId'
     | '/pos-orders/$orderId'
+    | '/quick-expenses/$expenseId'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId'
     | '/inventory/$productId'
     | '/pos-orders/$orderId'
+    | '/quick-expenses/$expenseId'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -408,6 +420,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/inventory/$productId'
     | '/_authenticated/pos-orders/$orderId'
+    | '/_authenticated/quick-expenses/$expenseId'
     | '/_authenticated/sales/$orderId'
     | '/_authenticated/settings/branches'
     | '/_authenticated/settings/modules'
@@ -617,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalesOrderIdRouteImport
       parentRoute: typeof AuthenticatedSalesRoute
     }
+    '/_authenticated/quick-expenses/$expenseId': {
+      id: '/_authenticated/quick-expenses/$expenseId'
+      path: '/$expenseId'
+      fullPath: '/quick-expenses/$expenseId'
+      preLoaderRoute: typeof AuthenticatedQuickExpensesExpenseIdRouteImport
+      parentRoute: typeof AuthenticatedQuickExpensesRoute
+    }
     '/_authenticated/pos-orders/$orderId': {
       id: '/_authenticated/pos-orders/$orderId'
       path: '/$orderId'
@@ -698,6 +718,21 @@ const AuthenticatedPosOrdersRouteWithChildren =
     AuthenticatedPosOrdersRouteChildren,
   )
 
+interface AuthenticatedQuickExpensesRouteChildren {
+  AuthenticatedQuickExpensesExpenseIdRoute: typeof AuthenticatedQuickExpensesExpenseIdRoute
+}
+
+const AuthenticatedQuickExpensesRouteChildren: AuthenticatedQuickExpensesRouteChildren =
+  {
+    AuthenticatedQuickExpensesExpenseIdRoute:
+      AuthenticatedQuickExpensesExpenseIdRoute,
+  }
+
+const AuthenticatedQuickExpensesRouteWithChildren =
+  AuthenticatedQuickExpensesRoute._addFileChildren(
+    AuthenticatedQuickExpensesRouteChildren,
+  )
+
 interface AuthenticatedSalesRouteChildren {
   AuthenticatedSalesOrderIdRoute: typeof AuthenticatedSalesOrderIdRoute
 }
@@ -751,7 +786,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedPosOrdersRoute: typeof AuthenticatedPosOrdersRouteWithChildren
-  AuthenticatedQuickExpensesRoute: typeof AuthenticatedQuickExpensesRoute
+  AuthenticatedQuickExpensesRoute: typeof AuthenticatedQuickExpensesRouteWithChildren
   AuthenticatedRefundsRoute: typeof AuthenticatedRefundsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
@@ -771,7 +806,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedPosOrdersRoute: AuthenticatedPosOrdersRouteWithChildren,
-  AuthenticatedQuickExpensesRoute: AuthenticatedQuickExpensesRoute,
+  AuthenticatedQuickExpensesRoute: AuthenticatedQuickExpensesRouteWithChildren,
   AuthenticatedRefundsRoute: AuthenticatedRefundsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
