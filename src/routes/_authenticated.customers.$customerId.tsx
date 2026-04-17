@@ -81,7 +81,7 @@ function CustomerDetail() {
             Open invoices
           </div>
           <div className="mt-2 text-2xl font-semibold">
-            {(invoices ?? []).filter((i) => i.status !== "paid" && i.status !== "void").length}
+            {(invoices ?? []).filter((i) => i.status !== "paid" && i.status !== "cancelled").length}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Across all invoices.</p>
         </div>
