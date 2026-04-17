@@ -51,12 +51,56 @@ function CustomerDetail() {
         }
       />
 
+      <div className="mb-5 grid gap-3 md:grid-cols-3">
+        <div
+          className={`rounded-xl border p-5 ${
+            balance > 0 ? "border-primary/40 bg-primary/5" : "bg-card"
+          }`}
+        >
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Wallet className="h-3.5 w-3.5" /> Store credit balance
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <MoneyDisplay
+              value={balance}
+              currency={balanceCurrency}
+              className={`text-2xl font-semibold ${balance > 0 ? "text-primary" : "text-foreground"}`}
+            />
+            {balance > 0 && (
+              <Badge variant="secondary" className="text-[10px]">
+                Available
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            From issued credit notes allocated to customer credit.
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Open invoices
+          </div>
+          <div className="mt-2 text-2xl font-semibold">
+            {(invoices ?? []).filter((i) => i.status !== "paid" && i.status !== "void").length}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Across all invoices.</p>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Credit notes
+          </div>
+          <div className="mt-2 text-2xl font-semibold">{creditNotes?.length ?? 0}</div>
+          <p className="mt-1 text-xs text-muted-foreground">Refunds & credits issued.</p>
+        </div>
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="orders">Sales orders ({salesOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="online">Online orders ({onlineOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="invoices">Invoices ({invoices?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="credits">Credits & refunds ({creditNotes?.length ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
