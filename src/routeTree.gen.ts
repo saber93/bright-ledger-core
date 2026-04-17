@@ -20,6 +20,7 @@ import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated.
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
 import { Route as AuthenticatedRefundsRouteImport } from './routes/_authenticated.refunds'
 import { Route as AuthenticatedQuickExpensesRouteImport } from './routes/_authenticated.quick-expenses'
+import { Route as AuthenticatedPosOrdersRouteImport } from './routes/_authenticated.pos-orders'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated.pos'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated.payments'
 import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated.invoices'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_aut
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
 import { Route as AuthenticatedSettingsBranchesRouteImport } from './routes/_authenticated.settings.branches'
 import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authenticated.sales.$orderId'
+import { Route as AuthenticatedPosOrdersOrderIdRouteImport } from './routes/_authenticated.pos-orders.$orderId'
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
@@ -95,6 +97,11 @@ const AuthenticatedQuickExpensesRoute =
     path: '/quick-expenses',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPosOrdersRoute = AuthenticatedPosOrdersRouteImport.update({
+  id: '/pos-orders',
+  path: '/pos-orders',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPosRoute = AuthenticatedPosRouteImport.update({
   id: '/pos',
   path: '/pos',
@@ -178,6 +185,12 @@ const AuthenticatedSalesOrderIdRoute =
     path: '/$orderId',
     getParentRoute: () => AuthenticatedSalesRoute,
   } as any)
+const AuthenticatedPosOrdersOrderIdRoute =
+  AuthenticatedPosOrdersOrderIdRouteImport.update({
+    id: '/$orderId',
+    path: '/$orderId',
+    getParentRoute: () => AuthenticatedPosOrdersRoute,
+  } as any)
 const AuthenticatedInventoryProductIdRoute =
   AuthenticatedInventoryProductIdRouteImport.update({
     id: '/$productId',
@@ -215,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pos': typeof AuthenticatedPosRoute
+  '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/quick-expenses': typeof AuthenticatedQuickExpensesRoute
   '/refunds': typeof AuthenticatedRefundsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -225,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -246,6 +261,7 @@ export interface FileRoutesByTo {
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pos': typeof AuthenticatedPosRoute
+  '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/quick-expenses': typeof AuthenticatedQuickExpensesRoute
   '/refunds': typeof AuthenticatedRefundsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -255,6 +271,7 @@ export interface FileRoutesByTo {
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -278,6 +295,7 @@ export interface FileRoutesById {
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
+  '/_authenticated/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/_authenticated/quick-expenses': typeof AuthenticatedQuickExpensesRoute
   '/_authenticated/refunds': typeof AuthenticatedRefundsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -288,6 +306,7 @@ export interface FileRoutesById {
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/_authenticated/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/_authenticated/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/_authenticated/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -311,6 +330,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/payments'
     | '/pos'
+    | '/pos-orders'
     | '/quick-expenses'
     | '/refunds'
     | '/reports'
@@ -321,6 +341,7 @@ export interface FileRouteTypes {
     | '/accounting/coa'
     | '/customers/$customerId'
     | '/inventory/$productId'
+    | '/pos-orders/$orderId'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -342,6 +363,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/payments'
     | '/pos'
+    | '/pos-orders'
     | '/quick-expenses'
     | '/refunds'
     | '/reports'
@@ -351,6 +373,7 @@ export interface FileRouteTypes {
     | '/accounting/coa'
     | '/customers/$customerId'
     | '/inventory/$productId'
+    | '/pos-orders/$orderId'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -373,6 +396,7 @@ export interface FileRouteTypes {
     | '/_authenticated/invoices'
     | '/_authenticated/payments'
     | '/_authenticated/pos'
+    | '/_authenticated/pos-orders'
     | '/_authenticated/quick-expenses'
     | '/_authenticated/refunds'
     | '/_authenticated/reports'
@@ -383,6 +407,7 @@ export interface FileRouteTypes {
     | '/_authenticated/accounting/coa'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/inventory/$productId'
+    | '/_authenticated/pos-orders/$orderId'
     | '/_authenticated/sales/$orderId'
     | '/_authenticated/settings/branches'
     | '/_authenticated/settings/modules'
@@ -478,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/quick-expenses'
       fullPath: '/quick-expenses'
       preLoaderRoute: typeof AuthenticatedQuickExpensesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/pos-orders': {
+      id: '/_authenticated/pos-orders'
+      path: '/pos-orders'
+      fullPath: '/pos-orders'
+      preLoaderRoute: typeof AuthenticatedPosOrdersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/pos': {
@@ -585,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalesOrderIdRouteImport
       parentRoute: typeof AuthenticatedSalesRoute
     }
+    '/_authenticated/pos-orders/$orderId': {
+      id: '/_authenticated/pos-orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/pos-orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedPosOrdersOrderIdRouteImport
+      parentRoute: typeof AuthenticatedPosOrdersRoute
+    }
     '/_authenticated/inventory/$productId': {
       id: '/_authenticated/inventory/$productId'
       path: '/$productId'
@@ -645,6 +684,20 @@ const AuthenticatedInventoryRouteWithChildren =
     AuthenticatedInventoryRouteChildren,
   )
 
+interface AuthenticatedPosOrdersRouteChildren {
+  AuthenticatedPosOrdersOrderIdRoute: typeof AuthenticatedPosOrdersOrderIdRoute
+}
+
+const AuthenticatedPosOrdersRouteChildren: AuthenticatedPosOrdersRouteChildren =
+  {
+    AuthenticatedPosOrdersOrderIdRoute: AuthenticatedPosOrdersOrderIdRoute,
+  }
+
+const AuthenticatedPosOrdersRouteWithChildren =
+  AuthenticatedPosOrdersRoute._addFileChildren(
+    AuthenticatedPosOrdersRouteChildren,
+  )
+
 interface AuthenticatedSalesRouteChildren {
   AuthenticatedSalesOrderIdRoute: typeof AuthenticatedSalesOrderIdRoute
 }
@@ -697,6 +750,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
+  AuthenticatedPosOrdersRoute: typeof AuthenticatedPosOrdersRouteWithChildren
   AuthenticatedQuickExpensesRoute: typeof AuthenticatedQuickExpensesRoute
   AuthenticatedRefundsRoute: typeof AuthenticatedRefundsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -716,6 +770,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
+  AuthenticatedPosOrdersRoute: AuthenticatedPosOrdersRouteWithChildren,
   AuthenticatedQuickExpensesRoute: AuthenticatedQuickExpensesRoute,
   AuthenticatedRefundsRoute: AuthenticatedRefundsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
@@ -740,3 +795,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
