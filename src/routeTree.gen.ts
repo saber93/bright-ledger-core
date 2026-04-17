@@ -25,6 +25,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated.customers'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated.bills'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated.settings.index'
+import { Route as AuthenticatedStoreOrderIdRouteImport } from './routes/_authenticated.store.$orderId'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated.settings.users'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
@@ -110,6 +111,12 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedStoreOrderIdRoute =
+  AuthenticatedStoreOrderIdRouteImport.update({
+    id: '/$orderId',
+    path: '/$orderId',
+    getParentRoute: () => AuthenticatedStoreRoute,
+  } as any)
 const AuthenticatedSettingsUsersRoute =
   AuthenticatedSettingsUsersRouteImport.update({
     id: '/users',
@@ -148,12 +155,13 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
-  '/store': typeof AuthenticatedStoreRoute
+  '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -168,12 +176,13 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRoute
-  '/store': typeof AuthenticatedStoreRoute
+  '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -191,12 +200,13 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
-  '/_authenticated/store': typeof AuthenticatedStoreRoute
+  '/_authenticated/store': typeof AuthenticatedStoreRouteWithChildren
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
+  '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId'
     | '/settings/modules'
     | '/settings/users'
+    | '/store/$orderId'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId'
     | '/settings/modules'
     | '/settings/users'
+    | '/store/$orderId'
     | '/settings'
   id:
     | '__root__'
@@ -262,6 +274,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/users'
+    | '/_authenticated/store/$orderId'
     | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -386,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/store/$orderId': {
+      id: '/_authenticated/store/$orderId'
+      path: '/$orderId'
+      fullPath: '/store/$orderId'
+      preLoaderRoute: typeof AuthenticatedStoreOrderIdRouteImport
+      parentRoute: typeof AuthenticatedStoreRoute
+    }
     '/_authenticated/settings/users': {
       id: '/_authenticated/settings/users'
       path: '/users'
@@ -449,6 +469,17 @@ const AuthenticatedSettingsRouteWithChildren =
     AuthenticatedSettingsRouteChildren,
   )
 
+interface AuthenticatedStoreRouteChildren {
+  AuthenticatedStoreOrderIdRoute: typeof AuthenticatedStoreOrderIdRoute
+}
+
+const AuthenticatedStoreRouteChildren: AuthenticatedStoreRouteChildren = {
+  AuthenticatedStoreOrderIdRoute: AuthenticatedStoreOrderIdRoute,
+}
+
+const AuthenticatedStoreRouteWithChildren =
+  AuthenticatedStoreRoute._addFileChildren(AuthenticatedStoreRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRouteWithChildren
@@ -459,7 +490,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
-  AuthenticatedStoreRoute: typeof AuthenticatedStoreRoute
+  AuthenticatedStoreRoute: typeof AuthenticatedStoreRouteWithChildren
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
   AuthenticatedAccountingCoaRoute: typeof AuthenticatedAccountingCoaRoute
 }
@@ -474,7 +505,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
-  AuthenticatedStoreRoute: AuthenticatedStoreRoute,
+  AuthenticatedStoreRoute: AuthenticatedStoreRouteWithChildren,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
   AuthenticatedAccountingCoaRoute: AuthenticatedAccountingCoaRoute,
 }
@@ -492,3 +523,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
