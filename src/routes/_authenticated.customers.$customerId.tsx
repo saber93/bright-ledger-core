@@ -63,6 +63,40 @@ function CustomerDetail() {
           )}
         </TabsContent>
 
+        <TabsContent value="orders" className="mt-4">
+          <DataTable
+            data={salesOrders}
+            onRowClick={(r) => {
+              window.location.href = `/sales/${r.id}`;
+            }}
+            emptyState={
+              <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+                No sales orders for this customer yet.
+              </div>
+            }
+            columns={[
+              {
+                key: "number",
+                header: "Number",
+                cell: (r) => <span className="font-mono text-xs">{r.order_number}</span>,
+              },
+              { key: "date", header: "Order date", cell: (r) => formatDate(r.order_date) },
+              {
+                key: "delivery",
+                header: "Expected",
+                cell: (r) => formatDate(r.expected_delivery_date),
+              },
+              { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                cell: (r) => <MoneyDisplay value={r.total} currency={r.currency} />,
+              },
+            ]}
+          />
+        </TabsContent>
+
         <TabsContent value="invoices" className="mt-4">
           <DataTable
             data={invoices}
