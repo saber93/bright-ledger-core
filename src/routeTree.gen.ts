@@ -39,10 +39,16 @@ import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedRefundsCreditNoteIdRouteImport } from './routes/_authenticated.refunds.$creditNoteId'
 import { Route as AuthenticatedQuickExpensesExpenseIdRouteImport } from './routes/_authenticated.quick-expenses.$expenseId'
 import { Route as AuthenticatedPosOrdersOrderIdRouteImport } from './routes/_authenticated.pos-orders.$orderId'
+import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated.invoices.$invoiceId'
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
+import { Route as ApiDocumentsQuickExpenseIdRouteImport } from './routes/api.documents.quick-expense.$id'
 import { Route as ApiDocumentsPosReceiptIdRouteImport } from './routes/api.documents.pos-receipt.$id'
+import { Route as ApiDocumentsInvoiceIdRouteImport } from './routes/api.documents.invoice.$id'
+import { Route as ApiDocumentsCreditNoteIdRouteImport } from './routes/api.documents.credit-note.$id'
+import { Route as ApiDocumentsCashSessionIdRouteImport } from './routes/api.documents.cash-session.$id'
+import { Route as ApiDocumentsBillIdRouteImport } from './routes/api.documents.bill.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -205,6 +211,12 @@ const AuthenticatedPosOrdersOrderIdRoute =
     path: '/$orderId',
     getParentRoute: () => AuthenticatedPosOrdersRoute,
   } as any)
+const AuthenticatedInvoicesInvoiceIdRoute =
+  AuthenticatedInvoicesInvoiceIdRouteImport.update({
+    id: '/$invoiceId',
+    path: '/$invoiceId',
+    getParentRoute: () => AuthenticatedInvoicesRoute,
+  } as any)
 const AuthenticatedInventoryProductIdRoute =
   AuthenticatedInventoryProductIdRouteImport.update({
     id: '/$productId',
@@ -223,12 +235,40 @@ const AuthenticatedAccountingCoaRoute =
     path: '/accounting/coa',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiDocumentsQuickExpenseIdRoute =
+  ApiDocumentsQuickExpenseIdRouteImport.update({
+    id: '/api/documents/quick-expense/$id',
+    path: '/api/documents/quick-expense/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiDocumentsPosReceiptIdRoute =
   ApiDocumentsPosReceiptIdRouteImport.update({
     id: '/api/documents/pos-receipt/$id',
     path: '/api/documents/pos-receipt/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiDocumentsInvoiceIdRoute = ApiDocumentsInvoiceIdRouteImport.update({
+  id: '/api/documents/invoice/$id',
+  path: '/api/documents/invoice/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDocumentsCreditNoteIdRoute =
+  ApiDocumentsCreditNoteIdRouteImport.update({
+    id: '/api/documents/credit-note/$id',
+    path: '/api/documents/credit-note/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiDocumentsCashSessionIdRoute =
+  ApiDocumentsCashSessionIdRouteImport.update({
+    id: '/api/documents/cash-session/$id',
+    path: '/api/documents/cash-session/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiDocumentsBillIdRoute = ApiDocumentsBillIdRouteImport.update({
+  id: '/api/documents/bill/$id',
+  path: '/api/documents/bill/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -239,7 +279,7 @@ export interface FileRoutesByFullPath {
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRouteWithChildren
-  '/invoices': typeof AuthenticatedInvoicesRoute
+  '/invoices': typeof AuthenticatedInvoicesRouteWithChildren
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pos': typeof AuthenticatedPosRoute
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
@@ -253,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
@@ -263,7 +304,12 @@ export interface FileRoutesByFullPath {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
+  '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
+  '/api/documents/credit-note/$id': typeof ApiDocumentsCreditNoteIdRoute
+  '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
+  '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -274,7 +320,7 @@ export interface FileRoutesByTo {
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRouteWithChildren
-  '/invoices': typeof AuthenticatedInvoicesRoute
+  '/invoices': typeof AuthenticatedInvoicesRouteWithChildren
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pos': typeof AuthenticatedPosRoute
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
@@ -287,6 +333,7 @@ export interface FileRoutesByTo {
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
@@ -297,7 +344,12 @@ export interface FileRoutesByTo {
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
+  '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
+  '/api/documents/credit-note/$id': typeof ApiDocumentsCreditNoteIdRoute
+  '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
+  '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -310,7 +362,7 @@ export interface FileRoutesById {
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRouteWithChildren
-  '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
+  '/_authenticated/invoices': typeof AuthenticatedInvoicesRouteWithChildren
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
@@ -324,6 +376,7 @@ export interface FileRoutesById {
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/_authenticated/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/_authenticated/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/_authenticated/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
@@ -334,7 +387,12 @@ export interface FileRoutesById {
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
+  '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
+  '/api/documents/credit-note/$id': typeof ApiDocumentsCreditNoteIdRoute
+  '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
+  '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -361,6 +419,7 @@ export interface FileRouteTypes {
     | '/accounting/coa'
     | '/customers/$customerId'
     | '/inventory/$productId'
+    | '/invoices/$invoiceId'
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
     | '/refunds/$creditNoteId'
@@ -371,7 +430,12 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/store/$orderId'
     | '/settings/'
+    | '/api/documents/bill/$id'
+    | '/api/documents/cash-session/$id'
+    | '/api/documents/credit-note/$id'
+    | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
+    | '/api/documents/quick-expense/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -395,6 +459,7 @@ export interface FileRouteTypes {
     | '/accounting/coa'
     | '/customers/$customerId'
     | '/inventory/$productId'
+    | '/invoices/$invoiceId'
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
     | '/refunds/$creditNoteId'
@@ -405,7 +470,12 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/store/$orderId'
     | '/settings'
+    | '/api/documents/bill/$id'
+    | '/api/documents/cash-session/$id'
+    | '/api/documents/credit-note/$id'
+    | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
+    | '/api/documents/quick-expense/$id'
   id:
     | '__root__'
     | '/'
@@ -431,6 +501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/accounting/coa'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/inventory/$productId'
+    | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/pos-orders/$orderId'
     | '/_authenticated/quick-expenses/$expenseId'
     | '/_authenticated/refunds/$creditNoteId'
@@ -441,7 +512,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
     | '/_authenticated/settings/'
+    | '/api/documents/bill/$id'
+    | '/api/documents/cash-session/$id'
+    | '/api/documents/credit-note/$id'
+    | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
+    | '/api/documents/quick-expense/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -449,7 +525,12 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiDocumentsBillIdRoute: typeof ApiDocumentsBillIdRoute
+  ApiDocumentsCashSessionIdRoute: typeof ApiDocumentsCashSessionIdRoute
+  ApiDocumentsCreditNoteIdRoute: typeof ApiDocumentsCreditNoteIdRoute
+  ApiDocumentsInvoiceIdRoute: typeof ApiDocumentsInvoiceIdRoute
   ApiDocumentsPosReceiptIdRoute: typeof ApiDocumentsPosReceiptIdRoute
+  ApiDocumentsQuickExpenseIdRoute: typeof ApiDocumentsQuickExpenseIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -664,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPosOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedPosOrdersRoute
     }
+    '/_authenticated/invoices/$invoiceId': {
+      id: '/_authenticated/invoices/$invoiceId'
+      path: '/$invoiceId'
+      fullPath: '/invoices/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdRouteImport
+      parentRoute: typeof AuthenticatedInvoicesRoute
+    }
     '/_authenticated/inventory/$productId': {
       id: '/_authenticated/inventory/$productId'
       path: '/$productId'
@@ -685,11 +773,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountingCoaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/documents/quick-expense/$id': {
+      id: '/api/documents/quick-expense/$id'
+      path: '/api/documents/quick-expense/$id'
+      fullPath: '/api/documents/quick-expense/$id'
+      preLoaderRoute: typeof ApiDocumentsQuickExpenseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/documents/pos-receipt/$id': {
       id: '/api/documents/pos-receipt/$id'
       path: '/api/documents/pos-receipt/$id'
       fullPath: '/api/documents/pos-receipt/$id'
       preLoaderRoute: typeof ApiDocumentsPosReceiptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/documents/invoice/$id': {
+      id: '/api/documents/invoice/$id'
+      path: '/api/documents/invoice/$id'
+      fullPath: '/api/documents/invoice/$id'
+      preLoaderRoute: typeof ApiDocumentsInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/documents/credit-note/$id': {
+      id: '/api/documents/credit-note/$id'
+      path: '/api/documents/credit-note/$id'
+      fullPath: '/api/documents/credit-note/$id'
+      preLoaderRoute: typeof ApiDocumentsCreditNoteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/documents/cash-session/$id': {
+      id: '/api/documents/cash-session/$id'
+      path: '/api/documents/cash-session/$id'
+      fullPath: '/api/documents/cash-session/$id'
+      preLoaderRoute: typeof ApiDocumentsCashSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/documents/bill/$id': {
+      id: '/api/documents/bill/$id'
+      path: '/api/documents/bill/$id'
+      fullPath: '/api/documents/bill/$id'
+      preLoaderRoute: typeof ApiDocumentsBillIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -722,6 +845,19 @@ const AuthenticatedInventoryRouteChildren: AuthenticatedInventoryRouteChildren =
 const AuthenticatedInventoryRouteWithChildren =
   AuthenticatedInventoryRoute._addFileChildren(
     AuthenticatedInventoryRouteChildren,
+  )
+
+interface AuthenticatedInvoicesRouteChildren {
+  AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
+}
+
+const AuthenticatedInvoicesRouteChildren: AuthenticatedInvoicesRouteChildren = {
+  AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
+}
+
+const AuthenticatedInvoicesRouteWithChildren =
+  AuthenticatedInvoicesRoute._addFileChildren(
+    AuthenticatedInvoicesRouteChildren,
   )
 
 interface AuthenticatedPosOrdersRouteChildren {
@@ -813,7 +949,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRouteWithChildren
-  AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
+  AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRouteWithChildren
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedPosOrdersRoute: typeof AuthenticatedPosOrdersRouteWithChildren
@@ -833,7 +969,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCustomersRoute: AuthenticatedCustomersRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRouteWithChildren,
-  AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
+  AuthenticatedInvoicesRoute: AuthenticatedInvoicesRouteWithChildren,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedPosOrdersRoute: AuthenticatedPosOrdersRouteWithChildren,
@@ -856,17 +992,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiDocumentsBillIdRoute: ApiDocumentsBillIdRoute,
+  ApiDocumentsCashSessionIdRoute: ApiDocumentsCashSessionIdRoute,
+  ApiDocumentsCreditNoteIdRoute: ApiDocumentsCreditNoteIdRoute,
+  ApiDocumentsInvoiceIdRoute: ApiDocumentsInvoiceIdRoute,
   ApiDocumentsPosReceiptIdRoute: ApiDocumentsPosReceiptIdRoute,
+  ApiDocumentsQuickExpenseIdRoute: ApiDocumentsQuickExpenseIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

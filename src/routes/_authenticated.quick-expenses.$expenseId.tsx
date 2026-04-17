@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Receipt, Trash2, Pencil, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Receipt, Trash2, Pencil, FileText, Loader2, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/data/PageHeader";
@@ -136,6 +136,14 @@ function QuickExpenseDetailPage() {
         description={`${detail.description} · ${formatDate(detail.date)}`}
         actions={
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() =>
+                window.open(`/api/documents/quick-expense/${expenseId}`, "_blank")
+              }
+            >
+              <Printer className="mr-1 h-4 w-4" /> Print / PDF
+            </Button>
             <Button variant="outline" onClick={() => setEdit(true)}>
               <Pencil className="mr-1 h-4 w-4" /> Edit
             </Button>

@@ -54,6 +54,9 @@ function InvoicesPage() {
       <DataTable
         loading={isLoading}
         data={filtered}
+        onRowClick={(r) => {
+          window.location.href = `/invoices/${r.id}`;
+        }}
         emptyState={
           <EmptyState
             icon={<FileText className="h-5 w-5" />}

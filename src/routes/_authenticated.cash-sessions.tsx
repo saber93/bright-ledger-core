@@ -221,24 +221,35 @@ function CashSessionsPage() {
                       {s.closed_at && ` · Closed ${formatDateTime(s.closed_at)}`}
                     </div>
                   </div>
-                  <div className="text-right text-xs">
-                    <div>Expected {formatMoney(Number(s.expected_cash), currency)}</div>
-                    {s.counted_cash !== null && (
-                      <div className="text-muted-foreground">
-                        Counted {formatMoney(Number(s.counted_cash), currency)}
-                        {Number(s.variance) !== 0 && (
-                          <span
-                            className={
-                              Number(s.variance) < 0 ? "text-destructive" : "text-emerald-500"
-                            }
-                          >
-                            {" "}
-                            ({Number(s.variance) > 0 ? "+" : ""}
-                            {formatMoney(Number(s.variance), currency)})
-                          </span>
-                        )}
-                      </div>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <div className="text-right text-xs">
+                      <div>Expected {formatMoney(Number(s.expected_cash), currency)}</div>
+                      {s.counted_cash !== null && (
+                        <div className="text-muted-foreground">
+                          Counted {formatMoney(Number(s.counted_cash), currency)}
+                          {Number(s.variance) !== 0 && (
+                            <span
+                              className={
+                                Number(s.variance) < 0 ? "text-destructive" : "text-emerald-500"
+                              }
+                            >
+                              {" "}
+                              ({Number(s.variance) > 0 ? "+" : ""}
+                              {formatMoney(Number(s.variance), currency)})
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        window.open(`/api/documents/cash-session/${s.id}`, "_blank")
+                      }
+                    >
+                      Z-Report
+                    </Button>
                   </div>
                 </div>
               ))}

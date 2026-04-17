@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Undo2, Loader2, FileText, Receipt } from "lucide-react";
+import { ArrowLeft, Undo2, Loader2, FileText, Receipt, Printer } from "lucide-react";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -119,6 +119,14 @@ function RefundDetailPage() {
           </span>
         }
         description={`Issued ${formatDate(note.issue_date)}${note.customers?.name ? ` · ${note.customers.name}` : ""}`}
+        actions={
+          <Button
+            variant="outline"
+            onClick={() => window.open(`/api/documents/credit-note/${note.id}`, "_blank")}
+          >
+            <Printer className="mr-1 h-4 w-4" /> Print / PDF
+          </Button>
+        }
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
