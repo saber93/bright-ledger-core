@@ -3,7 +3,18 @@ import { useCompanySettings, useUpdateSettings } from "@/features/settings/hooks
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Package, ShoppingBag, CreditCard, BarChart3 } from "lucide-react";
+import {
+  Package,
+  ShoppingBag,
+  CreditCard,
+  BarChart3,
+  Calculator,
+  Wallet,
+  Banknote,
+  Receipt,
+  Undo2,
+  Tag,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/_authenticated/settings/modules")({
@@ -27,35 +38,118 @@ function ModulesPage() {
   if (!data) return <div className="text-sm text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="grid gap-3 md:grid-cols-2">
-      <ModuleCard
-        icon={<Package className="h-5 w-5" />}
-        title="Inventory"
-        description="Track products, warehouses, and stock balances."
-        checked={data.inventory_enabled}
-        onChange={(v) => set({ inventory_enabled: v })}
-      />
-      <ModuleCard
-        icon={<BarChart3 className="h-5 w-5" />}
-        title="Stock Tracking"
-        description="Record stock movements with full traceability."
-        checked={data.stock_tracking_enabled}
-        onChange={(v) => set({ stock_tracking_enabled: v })}
-      />
-      <ModuleCard
-        icon={<ShoppingBag className="h-5 w-5" />}
-        title="Online Store"
-        description="Publish products, manage online orders, and run a storefront."
-        checked={data.online_store_enabled}
-        onChange={(v) => set({ online_store_enabled: v })}
-      />
-      <ModuleCard
-        icon={<CreditCard className="h-5 w-5" />}
-        title="Online Payments"
-        description="Accept payments via gateways with webhook processing."
-        checked={data.online_payments_enabled}
-        onChange={(v) => set({ online_payments_enabled: v })}
-      />
+    <div className="space-y-6">
+      <Section title="Core modules">
+        <div className="grid gap-3 md:grid-cols-2">
+          <ModuleCard
+            icon={<Calculator className="h-5 w-5" />}
+            title="Accounting"
+            description="Customer invoices, supplier bills, payments, and chart of accounts."
+            checked={data.accounting_enabled}
+            onChange={(v) => set({ accounting_enabled: v })}
+          />
+          <ModuleCard
+            icon={<Package className="h-5 w-5" />}
+            title="Inventory"
+            description="Track products, warehouses, and stock balances."
+            checked={data.inventory_enabled}
+            onChange={(v) => set({ inventory_enabled: v })}
+          />
+          <ModuleCard
+            icon={<BarChart3 className="h-5 w-5" />}
+            title="Stock Tracking"
+            description="Record stock movements with full traceability."
+            checked={data.stock_tracking_enabled}
+            onChange={(v) => set({ stock_tracking_enabled: v })}
+          />
+          <ModuleCard
+            icon={<ShoppingBag className="h-5 w-5" />}
+            title="Online Store"
+            description="Publish products, manage online orders, and run a storefront."
+            checked={data.online_store_enabled}
+            onChange={(v) => set({ online_store_enabled: v })}
+          />
+          <ModuleCard
+            icon={<CreditCard className="h-5 w-5" />}
+            title="Online Payments"
+            description="Accept payments via gateways with webhook processing."
+            checked={data.online_payments_enabled}
+            onChange={(v) => set({ online_payments_enabled: v })}
+          />
+        </div>
+      </Section>
+
+      <Section title="Daily operations" subtitle="Built for shops, salons, cafés, and field teams.">
+        <div className="grid gap-3 md:grid-cols-2">
+          <ModuleCard
+            icon={<Wallet className="h-5 w-5" />}
+            title="Point of Sale"
+            description="Fast counter checkout with receipts, cash & card, and inventory sync."
+            checked={data.pos_enabled}
+            onChange={(v) => set({ pos_enabled: v })}
+          />
+          <ModuleCard
+            icon={<Receipt className="h-5 w-5" />}
+            title="Quick Expenses"
+            description="Log small daily expenses with receipt photos and smart defaults."
+            checked={data.quick_expenses_enabled}
+            onChange={(v) => set({ quick_expenses_enabled: v })}
+          />
+          <ModuleCard
+            icon={<Banknote className="h-5 w-5" />}
+            title="Cash Sessions"
+            description="Open and close cash drawer shifts with reconciliation and variance."
+            checked={data.cash_sessions_enabled}
+            onChange={(v) => set({ cash_sessions_enabled: v })}
+          />
+          <ModuleCard
+            icon={<Undo2 className="h-5 w-5" />}
+            title="Refunds & Credit Notes"
+            description="Issue partial or full refunds with cash, credit, or invoice allocation."
+            checked={data.refunds_enabled}
+            onChange={(v) => set({ refunds_enabled: v })}
+          />
+          <ModuleCard
+            icon={<Tag className="h-5 w-5" />}
+            title="Tax Reporting"
+            description="Configurable tax rates and a tax summary report."
+            checked={data.tax_reporting_enabled}
+            onChange={(v) => set({ tax_reporting_enabled: v })}
+          />
+        </div>
+      </Section>
+
+      <Section title="POS preferences">
+        <div className="grid gap-3">
+          <ModuleCard
+            icon={<Tag className="h-5 w-5" />}
+            title="Allow price override at POS"
+            description="Cashiers can edit unit price at checkout (a reason will be required)."
+            checked={data.pos_allow_price_override}
+            onChange={(v) => set({ pos_allow_price_override: v })}
+          />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+      </div>
+      {children}
     </div>
   );
 }

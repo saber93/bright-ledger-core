@@ -10,6 +10,12 @@ export interface CompanySettings {
   stock_tracking_enabled: boolean;
   online_store_enabled: boolean;
   online_payments_enabled: boolean;
+  pos_enabled: boolean;
+  quick_expenses_enabled: boolean;
+  cash_sessions_enabled: boolean;
+  tax_reporting_enabled: boolean;
+  refunds_enabled: boolean;
+  pos_allow_price_override: boolean;
   invoice_prefix: string;
   bill_prefix: string;
 }
@@ -75,7 +81,6 @@ export function useCompanyMembers() {
         .eq("company_id", companyId!);
       if (error) throw error;
 
-      // join roles
       const ids = (data ?? []).map((m) => m.user_id);
       if (ids.length === 0) return [];
 
