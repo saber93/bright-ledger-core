@@ -1420,6 +1420,7 @@ export type Database = {
         | "inventory_manager"
         | "store_manager"
         | "staff"
+        | "cashier"
       bill_status:
         | "draft"
         | "received"
@@ -1600,6 +1601,7 @@ export const Constants = {
         "inventory_manager",
         "store_manager",
         "staff",
+        "cashier",
       ],
       bill_status: [
         "draft",
