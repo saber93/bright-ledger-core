@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCustomer } from "@/features/customers/hooks";
 import { useInvoicesForCustomer } from "@/features/invoices/hooks";
+import { useSalesOrdersForCustomer } from "@/features/sales-orders/hooks";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTable } from "@/components/data/DataTable";
