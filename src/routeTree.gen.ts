@@ -36,6 +36,7 @@ import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_aut
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
 import { Route as AuthenticatedSettingsBranchesRouteImport } from './routes/_authenticated.settings.branches'
 import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authenticated.sales.$orderId'
+import { Route as AuthenticatedRefundsCreditNoteIdRouteImport } from './routes/_authenticated.refunds.$creditNoteId'
 import { Route as AuthenticatedQuickExpensesExpenseIdRouteImport } from './routes/_authenticated.quick-expenses.$expenseId'
 import { Route as AuthenticatedPosOrdersOrderIdRouteImport } from './routes/_authenticated.pos-orders.$orderId'
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
@@ -186,6 +187,12 @@ const AuthenticatedSalesOrderIdRoute =
     path: '/$orderId',
     getParentRoute: () => AuthenticatedSalesRoute,
   } as any)
+const AuthenticatedRefundsCreditNoteIdRoute =
+  AuthenticatedRefundsCreditNoteIdRouteImport.update({
+    id: '/$creditNoteId',
+    path: '/$creditNoteId',
+    getParentRoute: () => AuthenticatedRefundsRoute,
+  } as any)
 const AuthenticatedQuickExpensesExpenseIdRoute =
   AuthenticatedQuickExpensesExpenseIdRouteImport.update({
     id: '/$expenseId',
@@ -237,7 +244,7 @@ export interface FileRoutesByFullPath {
   '/pos': typeof AuthenticatedPosRoute
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
-  '/refunds': typeof AuthenticatedRefundsRoute
+  '/refunds': typeof AuthenticatedRefundsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
@@ -248,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
+  '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -271,7 +279,7 @@ export interface FileRoutesByTo {
   '/pos': typeof AuthenticatedPosRoute
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
-  '/refunds': typeof AuthenticatedRefundsRoute
+  '/refunds': typeof AuthenticatedRefundsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/store': typeof AuthenticatedStoreRouteWithChildren
@@ -281,6 +289,7 @@ export interface FileRoutesByTo {
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
+  '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -306,7 +315,7 @@ export interface FileRoutesById {
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/_authenticated/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
-  '/_authenticated/refunds': typeof AuthenticatedRefundsRoute
+  '/_authenticated/refunds': typeof AuthenticatedRefundsRouteWithChildren
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
@@ -317,6 +326,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/_authenticated/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/_authenticated/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
+  '/_authenticated/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
   '/_authenticated/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/_authenticated/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/inventory/$productId'
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
+    | '/refunds/$creditNoteId'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/inventory/$productId'
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
+    | '/refunds/$creditNoteId'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -421,6 +433,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/$productId'
     | '/_authenticated/pos-orders/$orderId'
     | '/_authenticated/quick-expenses/$expenseId'
+    | '/_authenticated/refunds/$creditNoteId'
     | '/_authenticated/sales/$orderId'
     | '/_authenticated/settings/branches'
     | '/_authenticated/settings/modules'
@@ -630,6 +643,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalesOrderIdRouteImport
       parentRoute: typeof AuthenticatedSalesRoute
     }
+    '/_authenticated/refunds/$creditNoteId': {
+      id: '/_authenticated/refunds/$creditNoteId'
+      path: '/$creditNoteId'
+      fullPath: '/refunds/$creditNoteId'
+      preLoaderRoute: typeof AuthenticatedRefundsCreditNoteIdRouteImport
+      parentRoute: typeof AuthenticatedRefundsRoute
+    }
     '/_authenticated/quick-expenses/$expenseId': {
       id: '/_authenticated/quick-expenses/$expenseId'
       path: '/$expenseId'
@@ -733,6 +753,17 @@ const AuthenticatedQuickExpensesRouteWithChildren =
     AuthenticatedQuickExpensesRouteChildren,
   )
 
+interface AuthenticatedRefundsRouteChildren {
+  AuthenticatedRefundsCreditNoteIdRoute: typeof AuthenticatedRefundsCreditNoteIdRoute
+}
+
+const AuthenticatedRefundsRouteChildren: AuthenticatedRefundsRouteChildren = {
+  AuthenticatedRefundsCreditNoteIdRoute: AuthenticatedRefundsCreditNoteIdRoute,
+}
+
+const AuthenticatedRefundsRouteWithChildren =
+  AuthenticatedRefundsRoute._addFileChildren(AuthenticatedRefundsRouteChildren)
+
 interface AuthenticatedSalesRouteChildren {
   AuthenticatedSalesOrderIdRoute: typeof AuthenticatedSalesOrderIdRoute
 }
@@ -787,7 +818,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedPosOrdersRoute: typeof AuthenticatedPosOrdersRouteWithChildren
   AuthenticatedQuickExpensesRoute: typeof AuthenticatedQuickExpensesRouteWithChildren
-  AuthenticatedRefundsRoute: typeof AuthenticatedRefundsRoute
+  AuthenticatedRefundsRoute: typeof AuthenticatedRefundsRouteWithChildren
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
@@ -807,7 +838,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedPosOrdersRoute: AuthenticatedPosOrdersRouteWithChildren,
   AuthenticatedQuickExpensesRoute: AuthenticatedQuickExpensesRouteWithChildren,
-  AuthenticatedRefundsRoute: AuthenticatedRefundsRoute,
+  AuthenticatedRefundsRoute: AuthenticatedRefundsRouteWithChildren,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
@@ -830,3 +861,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
