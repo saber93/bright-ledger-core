@@ -45,6 +45,7 @@ function CustomerDetail() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="orders">Sales orders ({salesOrders?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="online">Online orders ({onlineOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="invoices">Invoices ({invoices?.length ?? 0})</TabsTrigger>
         </TabsList>
 
