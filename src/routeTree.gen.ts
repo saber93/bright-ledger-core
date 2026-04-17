@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedStoreOrderIdRouteImport } from './routes/_authenticated.store.$orderId'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated.settings.users'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
+import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authenticated.sales.$orderId'
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
@@ -130,6 +131,12 @@ const AuthenticatedSettingsModulesRoute =
     path: '/modules',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedSalesOrderIdRoute =
+  AuthenticatedSalesOrderIdRouteImport.update({
+    id: '/$orderId',
+    path: '/$orderId',
+    getParentRoute: () => AuthenticatedSalesRoute,
+  } as any)
 const AuthenticatedInventoryProductIdRoute =
   AuthenticatedInventoryProductIdRouteImport.update({
     id: '/$productId',
@@ -160,13 +167,14 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/sales': typeof AuthenticatedSalesRoute
+  '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
@@ -183,12 +191,13 @@ export interface FileRoutesByTo {
   '/invoices': typeof AuthenticatedInvoicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/sales': typeof AuthenticatedSalesRoute
+  '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
@@ -207,13 +216,14 @@ export interface FileRoutesById {
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/sales': typeof AuthenticatedSalesRoute
+  '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/store': typeof AuthenticatedStoreRouteWithChildren
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
+  '/_authenticated/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/accounting/coa'
     | '/customers/$customerId'
     | '/inventory/$productId'
+    | '/sales/$orderId'
     | '/settings/modules'
     | '/settings/users'
     | '/store/$orderId'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/accounting/coa'
     | '/customers/$customerId'
     | '/inventory/$productId'
+    | '/sales/$orderId'
     | '/settings/modules'
     | '/settings/users'
     | '/store/$orderId'
@@ -285,6 +297,7 @@ export interface FileRouteTypes {
     | '/_authenticated/accounting/coa'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/inventory/$productId'
+    | '/_authenticated/sales/$orderId'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
@@ -433,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsModulesRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/sales/$orderId': {
+      id: '/_authenticated/sales/$orderId'
+      path: '/$orderId'
+      fullPath: '/sales/$orderId'
+      preLoaderRoute: typeof AuthenticatedSalesOrderIdRouteImport
+      parentRoute: typeof AuthenticatedSalesRoute
+    }
     '/_authenticated/inventory/$productId': {
       id: '/_authenticated/inventory/$productId'
       path: '/$productId'
@@ -486,6 +506,17 @@ const AuthenticatedInventoryRouteWithChildren =
     AuthenticatedInventoryRouteChildren,
   )
 
+interface AuthenticatedSalesRouteChildren {
+  AuthenticatedSalesOrderIdRoute: typeof AuthenticatedSalesOrderIdRoute
+}
+
+const AuthenticatedSalesRouteChildren: AuthenticatedSalesRouteChildren = {
+  AuthenticatedSalesOrderIdRoute: AuthenticatedSalesOrderIdRoute,
+}
+
+const AuthenticatedSalesRouteWithChildren =
+  AuthenticatedSalesRoute._addFileChildren(AuthenticatedSalesRouteChildren)
+
 interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
@@ -522,7 +553,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSalesRoute: typeof AuthenticatedSalesRoute
+  AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRouteWithChildren
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
@@ -537,7 +568,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSalesRoute: AuthenticatedSalesRoute,
+  AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedStoreRoute: AuthenticatedStoreRouteWithChildren,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
