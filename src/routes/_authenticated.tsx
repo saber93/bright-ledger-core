@@ -107,6 +107,7 @@ const dashGroup: NavItem[] = [
 
 const salesGroup: NavItemDef[] = [
   { label: "POS", href: "/pos", icon: Wallet, flag: "pos_enabled" },
+  { label: "POS Orders", href: "/pos-orders", icon: Receipt, flag: "pos_enabled" },
   { label: "Sales Orders", href: "/sales", icon: ClipboardList },
   { label: "Customer Invoices", href: "/invoices", icon: FileText },
   { label: "Refunds", href: "/refunds", icon: Undo2, flag: "refunds_enabled" },
