@@ -20,6 +20,7 @@ function CustomerDetail() {
   const { data: customer, isLoading } = useCustomer(customerId);
   const { data: invoices } = useInvoicesForCustomer(customerId);
   const { data: salesOrders } = useSalesOrdersForCustomer(customerId);
+  const { data: onlineOrders } = useOnlineOrdersForEmail(customer?.email);
 
   if (isLoading) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
   if (!customer) return <div className="py-10 text-sm text-muted-foreground">Not found.</div>;
