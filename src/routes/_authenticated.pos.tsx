@@ -74,7 +74,6 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/pos")({
@@ -747,15 +746,8 @@ function PosTerminal() {
             toast.success(`Sale ${result.order_number} completed`);
             clearCart();
             setPaymentOpen(false);
-            // Open receipt automatically in new window
+            // Open receipt automatically in a new tab (HTML scaffold with auto window.print)
             window.open(`/api/documents/pos-receipt/${result.pos_order_id}`, "_blank");
-            // Also offer detail link
-            navigate({
-              to: "/sales",
-              search: { posOrderId: result.pos_order_id } as Record<string, string>,
-            });
-            void result;
-            // Persist last receipt id for "View receipt"
             try {
               localStorage.setItem("pos:last-receipt", result.pos_order_id);
             } catch {
@@ -1153,12 +1145,6 @@ function PaymentDrawer(props: {
                 ? "Complete on credit"
                 : "Complete sale"}
           </Button>
-          <Link
-            to="/sales"
-            className="mt-2 block text-center text-xs text-muted-foreground hover:underline"
-          >
-            <Mail className="mr-1 inline h-3 w-3" /> View past orders
-          </Link>
         </div>
       </SheetContent>
     </Sheet>
