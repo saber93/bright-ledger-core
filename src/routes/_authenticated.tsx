@@ -32,8 +32,13 @@ import {
   ShoppingBag,
   BarChart3,
   ClipboardList,
+  Wallet,
+  Banknote,
+  Receipt as ReceiptIcon,
+  Undo2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCompanySettings } from "@/features/settings/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
