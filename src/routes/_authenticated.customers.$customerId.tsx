@@ -18,6 +18,7 @@ function CustomerDetail() {
   const { customerId } = Route.useParams();
   const { data: customer, isLoading } = useCustomer(customerId);
   const { data: invoices } = useInvoicesForCustomer(customerId);
+  const { data: salesOrders } = useSalesOrdersForCustomer(customerId);
 
   if (isLoading) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
   if (!customer) return <div className="py-10 text-sm text-muted-foreground">Not found.</div>;
