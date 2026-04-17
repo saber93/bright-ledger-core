@@ -26,6 +26,13 @@ const labels: Record<string, { label: string; tone: Tone }> = {
   completed: { label: "Completed", tone: "success" },
   failed: { label: "Failed", tone: "danger" },
   refunded: { label: "Refunded", tone: "neutral" },
+  // online order / sales order
+  fulfilled: { label: "Fulfilled", tone: "info" },
+  shipped: { label: "Shipped", tone: "info" },
+  delivered: { label: "Delivered", tone: "success" },
+  quotation: { label: "Quotation", tone: "draft" },
+  confirmed: { label: "Confirmed", tone: "info" },
+  invoiced: { label: "Invoiced", tone: "success" },
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
