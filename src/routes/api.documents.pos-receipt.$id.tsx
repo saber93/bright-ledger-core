@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/documents/pos-receipt/$id")({
           return new Response("Not found", { status: 404 });
         }
 
-        const { data: company } = await supabase
+        const { data: company } = await supabaseAdmin
           .from("companies")
           .select("name, currency")
           .eq("id", order.company_id)
