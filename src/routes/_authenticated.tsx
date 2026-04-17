@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import {
@@ -121,10 +121,10 @@ function AppSidebar() {
     return (
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton asChild isActive={active}>
-          <a href={item.href} className="flex items-center gap-2.5">
+          <Link to={item.href} className="flex items-center gap-2.5">
             <Icon className="h-4 w-4" />
             <span>{item.label}</span>
-          </a>
+          </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
