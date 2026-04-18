@@ -122,7 +122,7 @@ export function useProfitLoss(filters: ReportFilters) {
         .select("id, total, status, issue_date")
         .eq("company_id", companyId!)
         .neq("status", "draft")
-        .neq("status", "cancelled")
+        .neq("status", "void")
         .gte("issue_date", filters.from)
         .lte("issue_date", filters.to);
 
@@ -398,7 +398,7 @@ export function useTaxSummary(filters: ReportFilters) {
           .select("id, credit_note_number, issue_date, subtotal, tax_total, status")
           .eq("company_id", companyId!)
           .neq("status", "draft")
-          .neq("status", "cancelled")
+          .neq("status", "void")
           .gte("issue_date", filters.from)
           .lte("issue_date", filters.to),
       ]);
