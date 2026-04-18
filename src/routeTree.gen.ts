@@ -36,6 +36,10 @@ import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_aut
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
 import { Route as AuthenticatedSettingsBranchesRouteImport } from './routes/_authenticated.settings.branches'
 import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authenticated.sales.$orderId'
+import { Route as AuthenticatedReportsTaxRouteImport } from './routes/_authenticated.reports.tax'
+import { Route as AuthenticatedReportsSalesRouteImport } from './routes/_authenticated.reports.sales'
+import { Route as AuthenticatedReportsProfitLossRouteImport } from './routes/_authenticated.reports.profit-loss'
+import { Route as AuthenticatedReportsCashFlowRouteImport } from './routes/_authenticated.reports.cash-flow'
 import { Route as AuthenticatedRefundsCreditNoteIdRouteImport } from './routes/_authenticated.refunds.$creditNoteId'
 import { Route as AuthenticatedQuickExpensesExpenseIdRouteImport } from './routes/_authenticated.quick-expenses.$expenseId'
 import { Route as AuthenticatedPosOrdersOrderIdRouteImport } from './routes/_authenticated.pos-orders.$orderId'
@@ -194,6 +198,29 @@ const AuthenticatedSalesOrderIdRoute =
     path: '/$orderId',
     getParentRoute: () => AuthenticatedSalesRoute,
   } as any)
+const AuthenticatedReportsTaxRoute = AuthenticatedReportsTaxRouteImport.update({
+  id: '/reports/tax',
+  path: '/reports/tax',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedReportsSalesRoute =
+  AuthenticatedReportsSalesRouteImport.update({
+    id: '/reports/sales',
+    path: '/reports/sales',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsProfitLossRoute =
+  AuthenticatedReportsProfitLossRouteImport.update({
+    id: '/reports/profit-loss',
+    path: '/reports/profit-loss',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsCashFlowRoute =
+  AuthenticatedReportsCashFlowRouteImport.update({
+    id: '/reports/cash-flow',
+    path: '/reports/cash-flow',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedRefundsCreditNoteIdRoute =
   AuthenticatedRefundsCreditNoteIdRouteImport.update({
     id: '/$creditNoteId',
@@ -297,6 +324,10 @@ export interface FileRoutesByFullPath {
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
+  '/reports/cash-flow': typeof AuthenticatedReportsCashFlowRoute
+  '/reports/profit-loss': typeof AuthenticatedReportsProfitLossRoute
+  '/reports/sales': typeof AuthenticatedReportsSalesRoute
+  '/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -337,6 +368,10 @@ export interface FileRoutesByTo {
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
+  '/reports/cash-flow': typeof AuthenticatedReportsCashFlowRoute
+  '/reports/profit-loss': typeof AuthenticatedReportsProfitLossRoute
+  '/reports/sales': typeof AuthenticatedReportsSalesRoute
+  '/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -380,6 +415,10 @@ export interface FileRoutesById {
   '/_authenticated/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/_authenticated/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/_authenticated/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
+  '/_authenticated/reports/cash-flow': typeof AuthenticatedReportsCashFlowRoute
+  '/_authenticated/reports/profit-loss': typeof AuthenticatedReportsProfitLossRoute
+  '/_authenticated/reports/sales': typeof AuthenticatedReportsSalesRoute
+  '/_authenticated/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/_authenticated/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/_authenticated/settings/branches': typeof AuthenticatedSettingsBranchesRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
@@ -423,6 +462,10 @@ export interface FileRouteTypes {
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
     | '/refunds/$creditNoteId'
+    | '/reports/cash-flow'
+    | '/reports/profit-loss'
+    | '/reports/sales'
+    | '/reports/tax'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -463,6 +506,10 @@ export interface FileRouteTypes {
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
     | '/refunds/$creditNoteId'
+    | '/reports/cash-flow'
+    | '/reports/profit-loss'
+    | '/reports/sales'
+    | '/reports/tax'
     | '/sales/$orderId'
     | '/settings/branches'
     | '/settings/modules'
@@ -505,6 +552,10 @@ export interface FileRouteTypes {
     | '/_authenticated/pos-orders/$orderId'
     | '/_authenticated/quick-expenses/$expenseId'
     | '/_authenticated/refunds/$creditNoteId'
+    | '/_authenticated/reports/cash-flow'
+    | '/_authenticated/reports/profit-loss'
+    | '/_authenticated/reports/sales'
+    | '/_authenticated/reports/tax'
     | '/_authenticated/sales/$orderId'
     | '/_authenticated/settings/branches'
     | '/_authenticated/settings/modules'
@@ -724,6 +775,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/sales/$orderId'
       preLoaderRoute: typeof AuthenticatedSalesOrderIdRouteImport
       parentRoute: typeof AuthenticatedSalesRoute
+    }
+    '/_authenticated/reports/tax': {
+      id: '/_authenticated/reports/tax'
+      path: '/reports/tax'
+      fullPath: '/reports/tax'
+      preLoaderRoute: typeof AuthenticatedReportsTaxRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/sales': {
+      id: '/_authenticated/reports/sales'
+      path: '/reports/sales'
+      fullPath: '/reports/sales'
+      preLoaderRoute: typeof AuthenticatedReportsSalesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/profit-loss': {
+      id: '/_authenticated/reports/profit-loss'
+      path: '/reports/profit-loss'
+      fullPath: '/reports/profit-loss'
+      preLoaderRoute: typeof AuthenticatedReportsProfitLossRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/cash-flow': {
+      id: '/_authenticated/reports/cash-flow'
+      path: '/reports/cash-flow'
+      fullPath: '/reports/cash-flow'
+      preLoaderRoute: typeof AuthenticatedReportsCashFlowRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/refunds/$creditNoteId': {
       id: '/_authenticated/refunds/$creditNoteId'
@@ -961,6 +1040,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRouteWithChildren
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
   AuthenticatedAccountingCoaRoute: typeof AuthenticatedAccountingCoaRoute
+  AuthenticatedReportsCashFlowRoute: typeof AuthenticatedReportsCashFlowRoute
+  AuthenticatedReportsProfitLossRoute: typeof AuthenticatedReportsProfitLossRoute
+  AuthenticatedReportsSalesRoute: typeof AuthenticatedReportsSalesRoute
+  AuthenticatedReportsTaxRoute: typeof AuthenticatedReportsTaxRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
 }
 
@@ -981,6 +1064,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedStoreRoute: AuthenticatedStoreRouteWithChildren,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
   AuthenticatedAccountingCoaRoute: AuthenticatedAccountingCoaRoute,
+  AuthenticatedReportsCashFlowRoute: AuthenticatedReportsCashFlowRoute,
+  AuthenticatedReportsProfitLossRoute: AuthenticatedReportsProfitLossRoute,
+  AuthenticatedReportsSalesRoute: AuthenticatedReportsSalesRoute,
+  AuthenticatedReportsTaxRoute: AuthenticatedReportsTaxRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
 }
 
