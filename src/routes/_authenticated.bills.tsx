@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Receipt, Plus } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { openDocument } from "@/lib/open-document";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -55,7 +56,7 @@ function BillsPage() {
         loading={isLoading}
         data={filtered}
         onRowClick={(r) =>
-          window.open(`/api/documents/bill/${r.id}`, "_blank")
+          void openDocument(`/api/documents/bill/${r.id}`)
         }
         emptyState={
           <EmptyState

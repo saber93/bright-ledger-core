@@ -16,6 +16,7 @@ import {
   type PosPaymentMethod,
 } from "@/features/pos/hooks";
 import { useAuth, useHasRole } from "@/lib/auth";
+import { openDocument } from "@/lib/open-document";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -747,7 +748,7 @@ function PosTerminal() {
             clearCart();
             setPaymentOpen(false);
             // Open receipt automatically in a new tab (HTML scaffold with auto window.print)
-            window.open(`/api/documents/pos-receipt/${result.pos_order_id}`, "_blank");
+            void openDocument(`/api/documents/pos-receipt/${result.pos_order_id}`);
             try {
               localStorage.setItem("pos:last-receipt", result.pos_order_id);
             } catch {

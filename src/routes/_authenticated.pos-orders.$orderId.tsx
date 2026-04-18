@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { ArrowLeft, FileText, Printer } from "lucide-react";
 import { RefundsHistory } from "@/components/refunds/RefundsHistory";
+import { openDocument } from "@/lib/open-document";
 
 export const Route = createFileRoute("/_authenticated/pos-orders/$orderId")({
   component: PosOrderDetailPage,
@@ -71,7 +72,7 @@ function PosOrderDetailPage() {
             <Button
               variant="outline"
               onClick={() =>
-                window.open(`/api/documents/pos-receipt/${order.id}`, "_blank")
+                void openDocument(`/api/documents/pos-receipt/${order.id}`)
               }
             >
               <Printer className="mr-1 h-4 w-4" /> Print receipt

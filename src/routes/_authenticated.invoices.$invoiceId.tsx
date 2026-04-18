@@ -12,6 +12,7 @@ import { RecordPaymentDialog } from "@/components/invoices/RecordPaymentDialog";
 import { useInvoice } from "@/features/invoices/hooks";
 import { useAuth } from "@/lib/auth";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
+import { openDocument } from "@/lib/open-document";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceDetailPage,
@@ -121,7 +122,7 @@ function InvoiceDetailPage() {
             <Button
               variant="outline"
               onClick={() =>
-                window.open(`/api/documents/invoice/${invoice.id}`, "_blank")
+                void openDocument(`/api/documents/invoice/${invoice.id}`)
               }
             >
               <Printer className="mr-1 h-4 w-4" /> Print / PDF

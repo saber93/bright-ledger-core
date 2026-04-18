@@ -15,6 +15,7 @@ import {
   getReceiptSignedUrl,
 } from "@/features/quick-expenses/hooks";
 import { useAuth } from "@/lib/auth";
+import { openDocument } from "@/lib/open-document";
 import { QuickExpenseDrawer } from "@/components/quick-expenses/QuickExpenseDrawer";
 
 export const Route = createFileRoute("/_authenticated/quick-expenses/$expenseId")({
@@ -139,7 +140,7 @@ function QuickExpenseDetailPage() {
             <Button
               variant="outline"
               onClick={() =>
-                window.open(`/api/documents/quick-expense/${expenseId}`, "_blank")
+                void openDocument(`/api/documents/quick-expense/${expenseId}`)
               }
             >
               <Printer className="mr-1 h-4 w-4" /> Print / PDF

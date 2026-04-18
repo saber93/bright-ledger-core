@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { openDocument } from "@/lib/open-document";
 import {
   Select,
   SelectContent,
@@ -245,7 +246,7 @@ function CashSessionsPage() {
                       size="sm"
                       variant="outline"
                       onClick={() =>
-                        window.open(`/api/documents/cash-session/${s.id}`, "_blank")
+                        void openDocument(`/api/documents/cash-session/${s.id}`)
                       }
                     >
                       Z-Report

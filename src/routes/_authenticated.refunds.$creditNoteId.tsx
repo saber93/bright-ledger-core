@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
 import { useCreditNote } from "@/features/refunds/hooks";
 import { useAuth } from "@/lib/auth";
+import { openDocument } from "@/lib/open-document";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/refunds/$creditNoteId")({
@@ -122,7 +123,7 @@ function RefundDetailPage() {
         actions={
           <Button
             variant="outline"
-            onClick={() => window.open(`/api/documents/credit-note/${note.id}`, "_blank")}
+            onClick={() => void openDocument(`/api/documents/credit-note/${note.id}`)}
           >
             <Printer className="mr-1 h-4 w-4" /> Print / PDF
           </Button>
