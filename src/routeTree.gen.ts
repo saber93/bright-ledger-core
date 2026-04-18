@@ -17,7 +17,6 @@ import { Route as AuthenticatedSuppliersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated.store'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated.sales'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
 import { Route as AuthenticatedRefundsRouteImport } from './routes/_authenticated.refunds'
 import { Route as AuthenticatedQuickExpensesRouteImport } from './routes/_authenticated.quick-expenses'
 import { Route as AuthenticatedPosOrdersRouteImport } from './routes/_authenticated.pos-orders'
@@ -30,6 +29,7 @@ import { Route as AuthenticatedCustomersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCashSessionsRouteImport } from './routes/_authenticated.cash-sessions'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated.bills'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated.settings.index'
+import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated.reports.index'
 import { Route as AuthenticatedStoreOrderIdRouteImport } from './routes/_authenticated.store.$orderId'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated.settings.users'
 import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_authenticated.settings.tax-rates'
@@ -87,11 +87,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedSalesRoute = AuthenticatedSalesRouteImport.update({
   id: '/sales',
   path: '/sales',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRefundsRoute = AuthenticatedRefundsRouteImport.update({
@@ -156,6 +151,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedReportsIndexRoute =
+  AuthenticatedReportsIndexRouteImport.update({
+    id: '/reports/',
+    path: '/reports/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedStoreOrderIdRoute =
   AuthenticatedStoreOrderIdRouteImport.update({
@@ -285,7 +286,6 @@ export interface FileRoutesByFullPath {
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
   '/refunds': typeof AuthenticatedRefundsRouteWithChildren
-  '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/store': typeof AuthenticatedStoreRouteWithChildren
@@ -303,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/reports/': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
@@ -326,7 +327,6 @@ export interface FileRoutesByTo {
   '/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
   '/refunds': typeof AuthenticatedRefundsRouteWithChildren
-  '/reports': typeof AuthenticatedReportsRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
@@ -343,6 +343,7 @@ export interface FileRoutesByTo {
   '/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
@@ -368,7 +369,6 @@ export interface FileRoutesById {
   '/_authenticated/pos-orders': typeof AuthenticatedPosOrdersRouteWithChildren
   '/_authenticated/quick-expenses': typeof AuthenticatedQuickExpensesRouteWithChildren
   '/_authenticated/refunds': typeof AuthenticatedRefundsRouteWithChildren
-  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/store': typeof AuthenticatedStoreRouteWithChildren
@@ -386,6 +386,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
@@ -411,7 +412,6 @@ export interface FileRouteTypes {
     | '/pos-orders'
     | '/quick-expenses'
     | '/refunds'
-    | '/reports'
     | '/sales'
     | '/settings'
     | '/store'
@@ -429,6 +429,7 @@ export interface FileRouteTypes {
     | '/settings/tax-rates'
     | '/settings/users'
     | '/store/$orderId'
+    | '/reports/'
     | '/settings/'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
@@ -452,7 +453,6 @@ export interface FileRouteTypes {
     | '/pos-orders'
     | '/quick-expenses'
     | '/refunds'
-    | '/reports'
     | '/sales'
     | '/store'
     | '/suppliers'
@@ -469,6 +469,7 @@ export interface FileRouteTypes {
     | '/settings/tax-rates'
     | '/settings/users'
     | '/store/$orderId'
+    | '/reports'
     | '/settings'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
@@ -493,7 +494,6 @@ export interface FileRouteTypes {
     | '/_authenticated/pos-orders'
     | '/_authenticated/quick-expenses'
     | '/_authenticated/refunds'
-    | '/_authenticated/reports'
     | '/_authenticated/sales'
     | '/_authenticated/settings'
     | '/_authenticated/store'
@@ -511,6 +511,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/tax-rates'
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
+    | '/_authenticated/reports/'
     | '/_authenticated/settings/'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
@@ -589,13 +590,6 @@ declare module '@tanstack/react-router' {
       path: '/sales'
       fullPath: '/sales'
       preLoaderRoute: typeof AuthenticatedSalesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/refunds': {
@@ -681,6 +675,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/reports/': {
+      id: '/_authenticated/reports/'
+      path: '/reports'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/store/$orderId': {
       id: '/_authenticated/store/$orderId'
@@ -955,12 +956,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPosOrdersRoute: typeof AuthenticatedPosOrdersRouteWithChildren
   AuthenticatedQuickExpensesRoute: typeof AuthenticatedQuickExpensesRouteWithChildren
   AuthenticatedRefundsRoute: typeof AuthenticatedRefundsRouteWithChildren
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSalesRoute: typeof AuthenticatedSalesRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRouteWithChildren
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
   AuthenticatedAccountingCoaRoute: typeof AuthenticatedAccountingCoaRoute
+  AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -975,12 +976,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPosOrdersRoute: AuthenticatedPosOrdersRouteWithChildren,
   AuthenticatedQuickExpensesRoute: AuthenticatedQuickExpensesRouteWithChildren,
   AuthenticatedRefundsRoute: AuthenticatedRefundsRouteWithChildren,
-  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSalesRoute: AuthenticatedSalesRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedStoreRoute: AuthenticatedStoreRouteWithChildren,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
   AuthenticatedAccountingCoaRoute: AuthenticatedAccountingCoaRoute,
+  AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
