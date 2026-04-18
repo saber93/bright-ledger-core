@@ -2,6 +2,96 @@
  * Shared utilities for the browser print-to-PDF document routes.
  * Worker-safe: pure HTML strings + small helpers, no native deps.
  */
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+/**
+ * Authorization guard for document print routes.
+ *
+ * Verifies that the requesting user:
+ *  1. Presents a valid Supabase access token (via `?token=` query param,
+ *     `Authorization: Bearer …` header, or `sb-access-token` cookie).
+ *  2. Is an active member of the document's company (`company_members`).
+ *
+ * Returns `{ ok: true, userId }` on success, or `{ ok: false, response }`
+ * with a ready-to-return HTML Response on failure.
+ *
+ * Document routes MUST call this before rendering — never trust opaque IDs
+ * or the fact that the URL was opened from inside the app shell.
+ */
+export async function requireDocumentAccess(
+  request: Request,
+  companyId: string,
+): Promise<
+  | { ok: true; userId: string }
+  | { ok: false; response: Response }
+> {
+  const token = extractAccessToken(request);
+  if (!token) {
+    return { ok: false, response: unauthorizedHtml("Sign in required to view this document.") };
+  }
+
+  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+  if (userErr || !userData?.user) {
+    return { ok: false, response: unauthorizedHtml("Your session has expired. Please sign in again.") };
+  }
+
+  const userId = userData.user.id;
+
+  const { data: membership, error: memErr } = await supabaseAdmin
+    .from("company_members")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("company_id", companyId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (memErr || !membership) {
+    return { ok: false, response: forbiddenHtml() };
+  }
+
+  return { ok: true, userId };
+}
+
+function extractAccessToken(request: Request): string | null {
+  const url = new URL(request.url);
+  const qs = url.searchParams.get("token");
+  if (qs) return qs;
+
+  const auth = request.headers.get("authorization");
+  if (auth && auth.toLowerCase().startsWith("bearer ")) {
+    return auth.slice(7).trim();
+  }
+
+  const cookieHeader = request.headers.get("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
+    if (match) return decodeURIComponent(match[1]);
+  }
+
+  return null;
+}
+
+function unauthorizedHtml(message: string): Response {
+  return htmlResponse(
+    renderDocumentHtml({
+      title: "Sign in required",
+      body: `<h1>Sign in required</h1><p class="muted">${escapeHtml(message)}</p>`,
+      noAutoPrint: true,
+    }),
+    401,
+  );
+}
+
+function forbiddenHtml(): Response {
+  return htmlResponse(
+    renderDocumentHtml({
+      title: "Access denied",
+      body: `<h1>Access denied</h1><p class="muted">You do not have access to this document.</p>`,
+      noAutoPrint: true,
+    }),
+    403,
+  );
+}
 
 export function escapeHtml(s: unknown): string {
   return String(s ?? "")
