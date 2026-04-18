@@ -594,10 +594,10 @@ export function useCashFlow(filters: ReportFilters) {
       const qeTotal = quickExpenses.reduce((s, e) => s + num(e.amount) + num(e.tax_amount), 0);
       const crTotal = cashRefunds.reduce((s, c) => s + num(c.amount), 0);
       const cashIns = events
-        .filter((e) => e.type === "pay_in")
+        .filter((e) => e.type === "cash_in")
         .reduce((s, e) => s + num(e.amount), 0);
       const cashOuts = events
-        .filter((e) => e.type === "pay_out" || e.type === "drop")
+        .filter((e) => e.type === "cash_out" || e.type === "payout")
         .reduce((s, e) => s + num(e.amount), 0);
 
       // By method aggregation
@@ -669,8 +669,8 @@ export function useCashFlow(filters: ReportFilters) {
           type: `Drawer ${e.type}`,
           method: "cash",
           reference: e.reference ?? e.note ?? "—",
-          inflow: e.type === "pay_in" ? num(e.amount) : 0,
-          outflow: e.type === "pay_out" || e.type === "drop" ? num(e.amount) : 0,
+          inflow: e.type === "cash_in" ? num(e.amount) : 0,
+          outflow: e.type === "cash_out" || e.type === "payout" ? num(e.amount) : 0,
         })),
       ].sort((a, b) => (a.date < b.date ? 1 : -1));
 
