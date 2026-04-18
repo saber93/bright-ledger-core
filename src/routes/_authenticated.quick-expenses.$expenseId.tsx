@@ -139,7 +139,7 @@ function QuickExpenseDetailPage() {
             <Button
               variant="outline"
               onClick={() =>
-                window.open(`/api/documents/quick-expense/${expenseId}`, "_blank")
+                void openDocument(`/api/documents/quick-expense/${expenseId}`)
               }
             >
               <Printer className="mr-1 h-4 w-4" /> Print / PDF

@@ -122,7 +122,7 @@ function RefundDetailPage() {
         actions={
           <Button
             variant="outline"
-            onClick={() => window.open(`/api/documents/credit-note/${note.id}`, "_blank")}
+            onClick={() => void openDocument(`/api/documents/credit-note/${note.id}`)}
           >
             <Printer className="mr-1 h-4 w-4" /> Print / PDF
           </Button>

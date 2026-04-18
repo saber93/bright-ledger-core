@@ -55,7 +55,7 @@ function BillsPage() {
         loading={isLoading}
         data={filtered}
         onRowClick={(r) =>
-          window.open(`/api/documents/bill/${r.id}`, "_blank")
+          void openDocument(`/api/documents/bill/${r.id}`)
         }
         emptyState={
           <EmptyState

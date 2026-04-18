@@ -747,7 +747,7 @@ function PosTerminal() {
             clearCart();
             setPaymentOpen(false);
             // Open receipt automatically in a new tab (HTML scaffold with auto window.print)
-            window.open(`/api/documents/pos-receipt/${result.pos_order_id}`, "_blank");
+            void openDocument(`/api/documents/pos-receipt/${result.pos_order_id}`);
             try {
               localStorage.setItem("pos:last-receipt", result.pos_order_id);
             } catch {

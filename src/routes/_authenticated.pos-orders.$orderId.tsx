@@ -71,7 +71,7 @@ function PosOrderDetailPage() {
             <Button
               variant="outline"
               onClick={() =>
-                window.open(`/api/documents/pos-receipt/${order.id}`, "_blank")
+                void openDocument(`/api/documents/pos-receipt/${order.id}`)
               }
             >
               <Printer className="mr-1 h-4 w-4" /> Print receipt

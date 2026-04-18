@@ -245,7 +245,7 @@ function CashSessionsPage() {
                       size="sm"
                       variant="outline"
                       onClick={() =>
-                        window.open(`/api/documents/cash-session/${s.id}`, "_blank")
+                        void openDocument(`/api/documents/cash-session/${s.id}`)
                       }
                     >
                       Z-Report

@@ -121,7 +121,7 @@ function InvoiceDetailPage() {
             <Button
               variant="outline"
               onClick={() =>
-                window.open(`/api/documents/invoice/${invoice.id}`, "_blank")
+                void openDocument(`/api/documents/invoice/${invoice.id}`)
               }
             >
               <Printer className="mr-1 h-4 w-4" /> Print / PDF
