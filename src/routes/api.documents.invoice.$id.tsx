@@ -8,18 +8,22 @@ import {
   htmlResponse,
   notFoundHtml,
   renderDocumentHtml,
+  requireDocumentAccess,
 } from "./api.documents.shared";
 
 export const Route = createFileRoute("/api/documents/invoice/$id")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         const { data: invoice, error } = await supabaseAdmin
           .from("customer_invoices")
           .select("*, customers(name, email, phone, address_line1, city, country, tax_id)")
           .eq("id", params.id)
           .maybeSingle();
         if (error || !invoice) return notFoundHtml("Invoice");
+
+        const guard = await requireDocumentAccess(request, invoice.company_id);
+        if (!guard.ok) return guard.response;
 
         const [{ data: lines }, { data: payments }, { data: company }] = await Promise.all([
           supabaseAdmin

@@ -9,12 +9,13 @@ import {
   htmlResponse,
   notFoundHtml,
   renderDocumentHtml,
+  requireDocumentAccess,
 } from "./api.documents.shared";
 
 export const Route = createFileRoute("/api/documents/quick-expense/$id")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         const { data: expense, error } = await supabaseAdmin
           .from("quick_expenses")
           .select(
@@ -23,6 +24,9 @@ export const Route = createFileRoute("/api/documents/quick-expense/$id")({
           .eq("id", params.id)
           .maybeSingle();
         if (error || !expense) return notFoundHtml("Expense");
+
+        const guard = await requireDocumentAccess(request, expense.company_id);
+        if (!guard.ok) return guard.response;
 
         const { data: company } = await supabaseAdmin
           .from("companies")
