@@ -16,6 +16,7 @@ import {
   type PosPaymentMethod,
 } from "@/features/pos/hooks";
 import { useAuth, useHasRole } from "@/lib/auth";
+import { openDocument } from "@/lib/open-document";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

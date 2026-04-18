@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Receipt, Plus } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { openDocument } from "@/lib/open-document";
 import { useState } from "react";
 import { toast } from "sonner";
 

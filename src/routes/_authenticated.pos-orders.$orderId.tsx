@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { ArrowLeft, FileText, Printer } from "lucide-react";
 import { RefundsHistory } from "@/components/refunds/RefundsHistory";
+import { openDocument } from "@/lib/open-document";
 
 export const Route = createFileRoute("/_authenticated/pos-orders/$orderId")({
   component: PosOrderDetailPage,

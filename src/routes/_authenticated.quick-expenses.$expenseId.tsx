@@ -15,6 +15,7 @@ import {
   getReceiptSignedUrl,
 } from "@/features/quick-expenses/hooks";
 import { useAuth } from "@/lib/auth";
+import { openDocument } from "@/lib/open-document";
 import { QuickExpenseDrawer } from "@/components/quick-expenses/QuickExpenseDrawer";
 
 export const Route = createFileRoute("/_authenticated/quick-expenses/$expenseId")({

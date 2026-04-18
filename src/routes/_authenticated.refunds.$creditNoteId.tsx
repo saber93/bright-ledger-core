@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
 import { useCreditNote } from "@/features/refunds/hooks";
 import { useAuth } from "@/lib/auth";
+import { openDocument } from "@/lib/open-document";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/refunds/$creditNoteId")({

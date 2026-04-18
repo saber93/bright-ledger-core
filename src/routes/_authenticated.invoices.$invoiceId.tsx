@@ -12,6 +12,7 @@ import { RecordPaymentDialog } from "@/components/invoices/RecordPaymentDialog";
 import { useInvoice } from "@/features/invoices/hooks";
 import { useAuth } from "@/lib/auth";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
+import { openDocument } from "@/lib/open-document";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceDetailPage,
