@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounting_periods: {
+        Row: {
+          close_reason: string | null
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          reopen_reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          close_reason?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          close_reason?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounting_periods_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -22,8 +78,12 @@ export type Database = {
           before: Json | null
           company_id: string
           created_at: string
+          entity_number: string | null
+          entity_type: string | null
           id: string
+          metadata: Json | null
           record_id: string | null
+          summary: string | null
           table_name: string
         }
         Insert: {
@@ -33,8 +93,12 @@ export type Database = {
           before?: Json | null
           company_id: string
           created_at?: string
+          entity_number?: string | null
+          entity_type?: string | null
           id?: string
+          metadata?: Json | null
           record_id?: string | null
+          summary?: string | null
           table_name: string
         }
         Update: {
@@ -44,8 +108,12 @@ export type Database = {
           before?: Json | null
           company_id?: string
           created_at?: string
+          entity_number?: string | null
+          entity_type?: string | null
           id?: string
+          metadata?: Json | null
           record_id?: string | null
+          summary?: string | null
           table_name?: string
         }
         Relationships: [
@@ -456,6 +524,92 @@ export type Database = {
         }
         Relationships: []
       }
+      company_collection_policies: {
+        Row: {
+          auto_reminders_enabled: boolean
+          auto_statements_enabled: boolean
+          batch_limit: number
+          company_id: string
+          created_at: string
+          created_by: string | null
+          default_reply_to: string | null
+          final_after_due_days: number
+          final_template_key: string
+          friendly_before_due_days: number
+          friendly_template_key: string
+          id: string
+          invoice_template_key: string
+          max_retry_attempts: number
+          overdue_after_due_days: number
+          overdue_template_key: string
+          retry_delay_minutes: number
+          sender_display_name: string | null
+          statement_run_day: number
+          statement_template_key: string
+          throttle_days: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_reminders_enabled?: boolean
+          auto_statements_enabled?: boolean
+          batch_limit?: number
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          default_reply_to?: string | null
+          final_after_due_days?: number
+          final_template_key?: string
+          friendly_before_due_days?: number
+          friendly_template_key?: string
+          id?: string
+          invoice_template_key?: string
+          max_retry_attempts?: number
+          overdue_after_due_days?: number
+          overdue_template_key?: string
+          retry_delay_minutes?: number
+          sender_display_name?: string | null
+          statement_run_day?: number
+          statement_template_key?: string
+          throttle_days?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_reminders_enabled?: boolean
+          auto_statements_enabled?: boolean
+          batch_limit?: number
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_reply_to?: string | null
+          final_after_due_days?: number
+          final_template_key?: string
+          friendly_before_due_days?: number
+          friendly_template_key?: string
+          id?: string
+          invoice_template_key?: string
+          max_retry_attempts?: number
+          overdue_after_due_days?: number
+          overdue_template_key?: string
+          retry_delay_minutes?: number
+          sender_display_name?: string | null
+          statement_run_day?: number
+          statement_template_key?: string
+          throttle_days?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_collection_policies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_members: {
         Row: {
           company_id: string
@@ -711,6 +865,9 @@ export type Database = {
           tax_total: number
           total: number
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         Insert: {
           amount_allocated?: number
@@ -733,6 +890,9 @@ export type Database = {
           tax_total?: number
           total?: number
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
         }
         Update: {
           amount_allocated?: number
@@ -755,6 +915,9 @@ export type Database = {
           tax_total?: number
           total?: number
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
         }
         Relationships: [
           {
@@ -832,6 +995,9 @@ export type Database = {
       customer_invoices: {
         Row: {
           amount_paid: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -850,6 +1016,9 @@ export type Database = {
         }
         Insert: {
           amount_paid?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -868,6 +1037,9 @@ export type Database = {
         }
         Update: {
           amount_paid?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -974,44 +1146,432 @@ export type Database = {
       }
       document_deliveries: {
         Row: {
+          attempt_count: number
+          bounced_at: string | null
           channel: string
+          clicked_at: string | null
           company_id: string
+          complained_at: string | null
+          dedupe_key: string | null
+          delivered_at: string | null
           document_id: string
+          document_number: string | null
           document_type: string
           error: string | null
+          event_type: string
           id: string
+          last_attempt_at: string | null
+          last_error_kind: string | null
+          last_event_at: string | null
+          last_event_summary: string | null
+          last_event_type: string | null
+          message: string | null
+          metadata: Json
+          next_retry_at: string | null
+          opened_at: string | null
+          processed_at: string | null
+          provider_message_id: string | null
+          provider_name: string
+          queued_at: string
           recipient: string | null
+          recipient_email_normalized: string | null
+          recipient_name: string | null
+          rejected_at: string | null
+          scheduled_for: string | null
+          send_mode: string
           sent_at: string
           sent_by: string | null
+          share_token_id: string | null
+          source_href: string | null
+          stage_key: string | null
           status: string
+          subject: string | null
+          suppressed_at: string | null
+          template_key: string | null
+          updated_at: string
         }
         Insert: {
+          attempt_count?: number
+          bounced_at?: string | null
           channel: string
+          clicked_at?: string | null
           company_id: string
+          complained_at?: string | null
+          dedupe_key?: string | null
+          delivered_at?: string | null
           document_id: string
+          document_number?: string | null
           document_type: string
           error?: string | null
+          event_type?: string
           id?: string
+          last_attempt_at?: string | null
+          last_error_kind?: string | null
+          last_event_at?: string | null
+          last_event_summary?: string | null
+          last_event_type?: string | null
+          message?: string | null
+          metadata?: Json
+          next_retry_at?: string | null
+          opened_at?: string | null
+          processed_at?: string | null
+          provider_message_id?: string | null
+          provider_name?: string
+          queued_at?: string
           recipient?: string | null
+          recipient_email_normalized?: string | null
+          recipient_name?: string | null
+          rejected_at?: string | null
+          scheduled_for?: string | null
+          send_mode?: string
           sent_at?: string
           sent_by?: string | null
+          share_token_id?: string | null
+          source_href?: string | null
+          stage_key?: string | null
           status?: string
+          subject?: string | null
+          suppressed_at?: string | null
+          template_key?: string | null
+          updated_at?: string
         }
         Update: {
+          attempt_count?: number
+          bounced_at?: string | null
           channel?: string
+          clicked_at?: string | null
           company_id?: string
+          complained_at?: string | null
+          dedupe_key?: string | null
+          delivered_at?: string | null
           document_id?: string
+          document_number?: string | null
           document_type?: string
           error?: string | null
+          event_type?: string
           id?: string
+          last_attempt_at?: string | null
+          last_error_kind?: string | null
+          last_event_at?: string | null
+          last_event_summary?: string | null
+          last_event_type?: string | null
+          message?: string | null
+          metadata?: Json
+          next_retry_at?: string | null
+          opened_at?: string | null
+          processed_at?: string | null
+          provider_message_id?: string | null
+          provider_name?: string
+          queued_at?: string
           recipient?: string | null
+          recipient_email_normalized?: string | null
+          recipient_name?: string | null
+          rejected_at?: string | null
+          scheduled_for?: string | null
+          send_mode?: string
           sent_at?: string
           sent_by?: string | null
+          share_token_id?: string | null
+          source_href?: string | null
+          stage_key?: string | null
           status?: string
+          subject?: string | null
+          suppressed_at?: string | null
+          template_key?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "document_deliveries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_deliveries_share_token_id_fkey"
+            columns: ["share_token_id"]
+            isOneToOne: false
+            referencedRelation: "document_share_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_delivery_events: {
+        Row: {
+          company_id: string
+          created_at: string
+          delivery_id: string
+          event_type: string
+          id: string
+          occurred_at: string
+          payload: Json
+          provider_message_id: string | null
+          provider_name: string
+          severity: string
+          summary: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          delivery_id: string
+          event_type: string
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          provider_message_id?: string | null
+          provider_name?: string
+          severity?: string
+          summary?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          delivery_id?: string
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          provider_message_id?: string | null
+          provider_name?: string
+          severity?: string
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_delivery_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_delivery_events_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "document_deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_delivery_outbox: {
+        Row: {
+          attempt_count: number
+          company_id: string
+          created_at: string
+          dedupe_key: string | null
+          delivery_id: string
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          last_error_kind: string | null
+          locked_at: string | null
+          locked_by: string | null
+          max_attempts: number
+          next_attempt_at: string
+          processed_at: string | null
+          send_mode: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          company_id: string
+          created_at?: string
+          dedupe_key?: string | null
+          delivery_id: string
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_error_kind?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          processed_at?: string | null
+          send_mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          company_id?: string
+          created_at?: string
+          dedupe_key?: string | null
+          delivery_id?: string
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_error_kind?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          processed_at?: string | null
+          send_mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_delivery_outbox_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_delivery_outbox_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: true
+            referencedRelation: "document_deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_delivery_suppressions: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          email: string
+          email_normalized: string
+          id: string
+          is_active: boolean
+          reason: string | null
+          scope: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          email_normalized: string
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          scope?: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          email_normalized?: string
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          scope?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_delivery_suppressions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_email_templates: {
+        Row: {
+          body_template: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          payment_instructions: string | null
+          subject_template: string
+          template_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body_template: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          payment_instructions?: string | null
+          subject_template: string
+          template_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body_template?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          payment_instructions?: string | null
+          subject_template?: string
+          template_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_email_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_share_tokens: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          document_id: string
+          document_type: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          token_hash: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          document_type: string
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          document_type?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_share_tokens_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -1265,6 +1825,9 @@ export type Database = {
         Row: {
           amount: number
           bill_id: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -1284,6 +1847,9 @@ export type Database = {
         Insert: {
           amount: number
           bill_id?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -1303,6 +1869,9 @@ export type Database = {
         Update: {
           amount?: number
           bill_id?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -2153,6 +2722,9 @@ export type Database = {
         Row: {
           amount_paid: number
           bill_number: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -2171,6 +2743,9 @@ export type Database = {
         Insert: {
           amount_paid?: number
           bill_number: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -2189,6 +2764,9 @@ export type Database = {
         Update: {
           amount_paid?: number
           bill_number?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -2439,9 +3017,469 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      accounting_ledger_adjustment_raw: {
+        Row: {
+          account_id: string | null
+          branch_id: string | null
+          company_id: string | null
+          counterparty_id: string | null
+          counterparty_name: string | null
+          counterparty_type: string | null
+          credit: number | null
+          debit: number | null
+          description: string | null
+          document_id: string | null
+          document_number: string | null
+          document_type: string | null
+          journal_date: string | null
+          journal_key: string | null
+          line_key: string | null
+          payment_method: string | null
+          posted_at: string | null
+          reference: string | null
+          sort_order: number | null
+          source_href: string | null
+          source_id: string | null
+          source_type: string | null
+        }
+        Relationships: []
+      }
+      accounting_ledger_lines: {
+        Row: {
+          account_code: string | null
+          account_id: string | null
+          account_name: string | null
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          amount: number | null
+          branch_id: string | null
+          company_id: string | null
+          counterparty_id: string | null
+          counterparty_name: string | null
+          counterparty_type: string | null
+          credit: number | null
+          debit: number | null
+          description: string | null
+          document_id: string | null
+          document_number: string | null
+          document_type: string | null
+          entry_side: string | null
+          journal_date: string | null
+          journal_key: string | null
+          line_key: string | null
+          payment_method: string | null
+          posted_at: string | null
+          reference: string | null
+          sort_order: number | null
+          source_href: string | null
+          source_id: string | null
+          source_type: string | null
+        }
+        Relationships: []
+      }
+      accounting_ledger_operational_raw: {
+        Row: {
+          account_id: string | null
+          branch_id: string | null
+          company_id: string | null
+          counterparty_id: string | null
+          counterparty_name: string | null
+          counterparty_type: string | null
+          credit: number | null
+          debit: number | null
+          description: string | null
+          document_id: string | null
+          document_number: string | null
+          document_type: string | null
+          journal_date: string | null
+          journal_key: string | null
+          line_key: string | null
+          payment_method: string | null
+          posted_at: string | null
+          reference: string | null
+          sort_order: number | null
+          source_href: string | null
+          source_id: string | null
+          source_type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      accounting_account_balances: {
+        Args: { _as_of: string; _branch_id?: string; _company_id: string }
+        Returns: {
+          account_code: string
+          account_id: string
+          account_name: string
+          account_type: Database["public"]["Enums"]["account_type"]
+          balance_net: number
+          credit_balance: number
+          debit_balance: number
+        }[]
+      }
+      accounting_account_id: {
+        Args: { _code: string; _company_id: string }
+        Returns: string
+      }
+      accounting_account_ledger: {
+        Args: {
+          _account_id: string
+          _branch_id?: string
+          _company_id: string
+          _from: string
+          _to: string
+        }
+        Returns: {
+          counterparty_name: string
+          credit: number
+          debit: number
+          description: string
+          document_id: string
+          document_number: string
+          document_type: string
+          journal_date: string
+          journal_key: string
+          line_key: string
+          opening_balance: number
+          payment_method: string
+          posted_at: string
+          reference: string
+          running_balance: number
+          source_href: string
+          source_type: string
+        }[]
+      }
+      accounting_assert_period_unlocked: {
+        Args: {
+          _company_id: string
+          _context?: string
+          _effective_date: string
+        }
+        Returns: undefined
+      }
+      accounting_cash_account_id: {
+        Args: { _company_id: string; _method: string }
+        Returns: string
+      }
+      accounting_close_period: {
+        Args: { _company_id: string; _period_start: string; _reason?: string }
+        Returns: {
+          close_reason: string | null
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          reopen_reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "accounting_periods"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accounting_list_periods: {
+        Args: {
+          _company_id: string
+          _months_back?: number
+          _months_forward?: number
+        }
+        Returns: {
+          close_reason: string
+          closed_at: string
+          closed_by: string
+          id: string
+          label: string
+          period_end: string
+          period_start: string
+          reopen_reason: string
+          reopened_at: string
+          reopened_by: string
+          status: string
+        }[]
+      }
+      accounting_period_end: {
+        Args: { _effective_date: string }
+        Returns: string
+      }
+      accounting_period_start: {
+        Args: { _effective_date: string }
+        Returns: string
+      }
+      accounting_period_state: {
+        Args: { _company_id: string; _effective_date: string }
+        Returns: {
+          is_locked: boolean
+          label: string
+          period_end: string
+          period_start: string
+          reason: string
+          status: string
+        }[]
+      }
+      accounting_reopen_period: {
+        Args: { _company_id: string; _period_start: string; _reason?: string }
+        Returns: {
+          close_reason: string | null
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          reopen_reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "accounting_periods"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accounting_reverse_payment: {
+        Args: { _payment_id: string; _reason: string }
+        Returns: {
+          amount: number
+          bill_id: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          direction: Database["public"]["Enums"]["payment_direction"]
+          id: string
+          invoice_id: string | null
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          paid_at: string
+          party_id: string
+          party_type: string
+          reference: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accounting_source_trace: {
+        Args: {
+          _company_id: string
+          _document_ids?: string[]
+          _document_type?: string
+          _source_hrefs?: string[]
+        }
+        Returns: {
+          account_code: string
+          account_id: string
+          account_name: string
+          account_type: Database["public"]["Enums"]["account_type"]
+          amount: number
+          branch_id: string
+          company_id: string
+          counterparty_id: string
+          counterparty_name: string
+          counterparty_type: string
+          credit: number
+          debit: number
+          description: string
+          document_id: string
+          document_number: string
+          document_type: string
+          entry_side: string
+          journal_date: string
+          journal_key: string
+          line_key: string
+          payment_method: string
+          posted_at: string
+          reference: string
+          sort_order: number
+          source_href: string
+          source_id: string
+          source_type: string
+        }[]
+      }
+      accounting_sync_lock_mirror: {
+        Args: { _company_id: string }
+        Returns: undefined
+      }
+      accounting_trial_balance: {
+        Args: {
+          _branch_id?: string
+          _company_id: string
+          _from: string
+          _to: string
+        }
+        Returns: {
+          account_code: string
+          account_id: string
+          account_name: string
+          account_type: Database["public"]["Enums"]["account_type"]
+          closing_credit: number
+          closing_debit: number
+          opening_credit: number
+          opening_debit: number
+          period_credit: number
+          period_debit: number
+        }[]
+      }
+      accounting_void_bill: {
+        Args: { _bill_id: string; _reason: string }
+        Returns: {
+          amount_paid: number
+          bill_number: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          due_date: string | null
+          id: string
+          issue_date: string
+          notes: string | null
+          status: Database["public"]["Enums"]["bill_status"]
+          subtotal: number
+          supplier_id: string
+          tax_total: number
+          total: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "supplier_bills"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accounting_void_credit_note: {
+        Args: { _credit_note_id: string; _reason: string }
+        Returns: {
+          amount_allocated: number
+          company_id: string
+          created_at: string
+          created_by: string | null
+          credit_note_number: string
+          currency: string
+          customer_id: string | null
+          id: string
+          issue_date: string
+          notes: string | null
+          reason: string | null
+          restock: boolean
+          source_invoice_id: string | null
+          source_pos_order_id: string | null
+          source_type: Database["public"]["Enums"]["credit_note_source"]
+          status: Database["public"]["Enums"]["credit_note_status"]
+          subtotal: number
+          tax_total: number
+          total: number
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_notes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accounting_void_invoice: {
+        Args: { _invoice_id: string; _reason: string }
+        Returns: {
+          amount_paid: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_id: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal: number
+          tax_total: number
+          total: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customer_invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      finance_assert_role: {
+        Args: {
+          _action: string
+          _company_id: string
+          _roles: Database["public"]["Enums"]["app_role"][]
+        }
+        Returns: undefined
+      }
+      finance_audit_summary: {
+        Args: {
+          _action: string
+          _after: Json
+          _before: Json
+          _table_name: string
+        }
+        Returns: string
+      }
+      finance_bypass_token: { Args: never; Returns: string }
+      finance_integrity_warnings: {
+        Args: { _company_id: string }
+        Returns: {
+          document_number: string
+          journal_date: string
+          kind: string
+          message: string
+          severity: string
+          source_href: string
+          source_id: string
+          source_type: string
+        }[]
+      }
+      finance_log_event: {
+        Args: {
+          _action: string
+          _after?: Json
+          _before?: Json
+          _company_id: string
+          _entity_number?: string
+          _entity_type?: string
+          _metadata?: Json
+          _record_id: string
+          _summary?: string
+          _table_name: string
+        }
+        Returns: undefined
+      }
       has_any_role: {
         Args: {
           _company_id: string
