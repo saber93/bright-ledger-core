@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/data/PageHeader";
 import { EmptyState } from "@/components/data/EmptyState";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/pos-orders")({
 });
 
 function PosOrdersPage() {
+  const location = useLocation();
   const { company } = useAuth();
   const { data: settings } = useCompanySettings();
   const { data = [], isLoading } = usePosOrders(200);
@@ -36,6 +37,10 @@ function PosOrdersPage() {
       }),
     [data, search, statusFilter],
   );
+
+  if (/^\/pos-orders\/[^/]+$/.test(location.pathname)) {
+    return <Outlet />;
+  }
 
   if (settings && !settings.pos_enabled) {
     return (

@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getDefaultPostingAccounts } from "@/features/accounting/default-accounts";
+import { ensureAccountingPeriodUnlocked } from "@/features/accounting/locks";
 import { useAuth } from "@/lib/auth";
 
 // ---------- Types ----------
@@ -285,6 +287,12 @@ export function useOpenSessionMutation() {
       opening_cash: number;
       notes?: string | null;
     }) => {
+      await ensureAccountingPeriodUnlocked(
+        companyId!,
+        new Date().toISOString().slice(0, 10),
+        "cash session opening",
+      );
+
       const { data: session, error } = await supabase
         .from("cash_sessions")
         .insert({
@@ -327,6 +335,20 @@ export function useCashEventMutation() {
       note?: string | null;
       reference?: string | null;
     }) => {
+      const { data: session, error: sessionError } = await supabase
+        .from("cash_sessions")
+        .select("company_id")
+        .eq("id", input.session_id)
+        .maybeSingle();
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error("Cash session not found");
+
+      await ensureAccountingPeriodUnlocked(
+        session.company_id,
+        new Date().toISOString().slice(0, 10),
+        "cash session transfer",
+      );
+
       const { error } = await supabase.from("cash_session_events").insert({
         session_id: input.session_id,
         type: input.type,
@@ -357,6 +379,20 @@ export function useCloseSessionMutation() {
       counted_cash: number;
       notes?: string | null;
     }) => {
+      const { data: session, error: sessionError } = await supabase
+        .from("cash_sessions")
+        .select("company_id")
+        .eq("id", input.session_id)
+        .maybeSingle();
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error("Cash session not found");
+
+      await ensureAccountingPeriodUnlocked(
+        session.company_id,
+        new Date().toISOString().slice(0, 10),
+        "cash session closing",
+      );
+
       // Recompute expected before closing
       const expected = await recomputeExpectedCash(input.session_id);
 
@@ -471,6 +507,9 @@ export function useCheckoutMutation() {
     mutationFn: async (input: CheckoutInput): Promise<CheckoutResult> => {
       if (!companyId) throw new Error("Missing company");
       if (input.lines.length === 0) throw new Error("Cart is empty");
+      const postingDate = new Date().toISOString().slice(0, 10);
+      await ensureAccountingPeriodUnlocked(companyId, postingDate, "POS checkout");
+      const defaults = await getDefaultPostingAccounts(companyId);
 
       // ---------- Totals ----------
       let subtotal = 0;
@@ -521,11 +560,11 @@ export function useCheckoutMutation() {
           company_id: companyId,
           customer_id: customerId,
           invoice_number: invoiceNumber,
-          issue_date: new Date().toISOString().slice(0, 10),
+          issue_date: postingDate,
           due_date: input.on_credit
             ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-            : new Date().toISOString().slice(0, 10),
-          status: invoiceStatus,
+            : postingDate,
+          status: "draft",
           notes: input.notes,
           subtotal,
           tax_total: taxTotal,
@@ -545,6 +584,7 @@ export function useCheckoutMutation() {
         quantity: l.quantity,
         unit_price: l.unit_price,
         tax_rate: l.tax_rate,
+        account_id: l.is_service ? defaults.serviceRevenueId : defaults.salesRevenueId,
         // store gross-of-tax line total to mirror existing invoice convention
         line_total: lineTotals[i],
       }));
@@ -718,6 +758,15 @@ export function useCheckoutMutation() {
           }
         }
       }
+
+      const { error: invoiceFinalizeErr } = await supabase
+        .from("customer_invoices")
+        .update({
+          status: invoiceStatus,
+          amount_paid: settledByPayments,
+        })
+        .eq("id", invoice.id);
+      if (invoiceFinalizeErr) throw invoiceFinalizeErr;
 
       return { pos_order_id: posOrderId, invoice_id: invoice.id, order_number: orderNumber };
     },

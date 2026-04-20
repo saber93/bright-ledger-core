@@ -19,6 +19,12 @@ const labels: Record<string, { label: string; tone: Tone }> = {
   paid: { label: "Paid", tone: "success" },
   overdue: { label: "Overdue", tone: "danger" },
   cancelled: { label: "Cancelled", tone: "neutral" },
+  issued: { label: "Issued", tone: "info" },
+  partially_settled: { label: "Partially Settled", tone: "warning" },
+  settled: { label: "Settled", tone: "success" },
+  void: { label: "Void", tone: "neutral" },
+  open: { label: "Open", tone: "info" },
+  closed: { label: "Closed", tone: "neutral" },
   // bill
   received: { label: "Received", tone: "info" },
   // payment

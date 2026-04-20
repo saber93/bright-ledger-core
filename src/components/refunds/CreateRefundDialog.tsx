@@ -778,6 +778,7 @@ export function CreateRefundDialog({
         <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
           <Button
             variant="ghost"
+            disabled={create.isPending}
             onClick={() => (step === 1 ? onOpenChange(false) : setStep((step - 1) as 1 | 2))}
           >
             {step === 1 ? "Cancel" : "Back"}
@@ -786,6 +787,7 @@ export function CreateRefundDialog({
             <Button
               onClick={() => setStep((step + 1) as 2 | 3)}
               disabled={
+                create.isPending ||
                 (step === 1 && !sourceId) ||
                 (step === 2 && totals.total <= 0)
               }

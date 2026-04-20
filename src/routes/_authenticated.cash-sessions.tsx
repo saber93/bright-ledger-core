@@ -35,15 +35,22 @@ import {
   useCashEventMutation,
   useCashSessionDetail,
 } from "@/features/pos/hooks";
+import { usePostingAudit } from "@/features/accounting/ledger";
+import { PostingAuditCard } from "@/components/accounting/PostingAuditCard";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/cash-sessions")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    sessionId: typeof search.sessionId === "string" ? search.sessionId : undefined,
+  }),
   component: CashSessionsPage,
 });
 
 function CashSessionsPage() {
+  const navigate = Route.useNavigate();
+  const search = Route.useSearch();
   const { data: settings } = useCompanySettings();
   const { data: branches = [] } = useBranches();
   const { data: registers = [] } = useRegisters();
@@ -73,7 +80,17 @@ function CashSessionsPage() {
   const [eventAmount, setEventAmount] = useState(0);
   const [eventNote, setEventNote] = useState("");
 
-  const { data: detail } = useCashSessionDetail(openSession?.id);
+  const selectedSessionId = search.sessionId ?? openSession?.id ?? sessions[0]?.id;
+  const { data: detail } = useCashSessionDetail(selectedSessionId);
+  const viewedSession =
+    detail?.session ??
+    sessions.find((session) => session.id === selectedSessionId) ??
+    openSession ??
+    null;
+  const sessionAudit = usePostingAudit({
+    documentType: "cash_session",
+    documentIds: viewedSession ? [viewedSession.id] : [],
+  });
 
   if (settings && !settings.cash_sessions_enabled) {
     return (
@@ -141,35 +158,40 @@ function CashSessionsPage() {
         </Select>
       </div>
 
-      {openSession && (
+      {viewedSession && (
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base">Active session</CardTitle>
+              <CardTitle className="text-base">Session detail</CardTitle>
               <p className="text-xs text-muted-foreground">
-                Opened {formatDateTime(openSession.opened_at)} · {currentRegister?.name}
+                Opened {formatDateTime(viewedSession.opened_at)} ·{" "}
+                {detail?.session?.pos_registers?.name ?? currentRegister?.name ?? "—"}
               </p>
             </div>
-            <Badge>Open</Badge>
+            <Badge variant={viewedSession.status === "open" ? "default" : "secondary"}>
+              {viewedSession.status}
+            </Badge>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-3">
-              <Stat label="Opening cash" value={formatMoney(Number(openSession.opening_cash), currency)} />
-              <Stat label="Expected cash" value={formatMoney(Number(openSession.expected_cash), currency)} />
+              <Stat label="Opening cash" value={formatMoney(Number(viewedSession.opening_cash), currency)} />
+              <Stat label="Expected cash" value={formatMoney(Number(viewedSession.expected_cash), currency)} />
               <Stat label="Events" value={String(detail?.events.length ?? 0)} />
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => setEventDialog("cash_in")}>
-                Cash in
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => setEventDialog("cash_out")}>
-                Cash out
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => setEventDialog("payout")}>
-                Payout
-              </Button>
-            </div>
+            {viewedSession.status === "open" && viewedSession.id === openSession?.id && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setEventDialog("cash_in")}>
+                  Cash in
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setEventDialog("cash_out")}>
+                  Cash out
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setEventDialog("payout")}>
+                  Payout
+                </Button>
+              </div>
+            )}
 
             {detail && detail.events.length > 0 && (
               <div className="mt-4">
@@ -193,6 +215,18 @@ function CashSessionsPage() {
                 </div>
               </div>
             )}
+
+            <div className="mt-4">
+              <PostingAuditCard
+                audit={sessionAudit.data}
+                currency={currency}
+                isLoading={sessionAudit.isLoading}
+                title="Ledger impact"
+                description="Only cash-in, cash-out, and payout events create accounting journals. Opening, sale, refund, and closing markers stay operational."
+                emptyDescription="This session has no transfer journals yet. That is normal until a cash-in, cash-out, or payout event is recorded."
+                nonPostingNote="Cash sale and refund till events are deliberately excluded from accounting here because the ledger already posts them through payments and cash refunds."
+              />
+            </div>
           </CardContent>
         </Card>
       )}
@@ -209,7 +243,12 @@ function CashSessionsPage() {
           ) : (
             <div className="divide-y">
               {sessions.map((s) => (
-                <div key={s.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div
+                  key={s.id}
+                  className={`flex items-center justify-between gap-3 px-4 py-3 ${
+                    selectedSessionId === s.id ? "bg-muted/20" : ""
+                  }`}
+                >
                   <div>
                     <div className="flex items-center gap-2 text-sm font-medium">
                       {s.pos_registers?.name ?? "—"}
@@ -242,6 +281,19 @@ function CashSessionsPage() {
                         </div>
                       )}
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        void navigate({
+                          to: "/cash-sessions",
+                          search: { sessionId: s.id },
+                          replace: true,
+                        })
+                      }
+                    >
+                      Inspect
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -287,10 +339,11 @@ function CashSessionsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpenDialog(false)}>
+            <Button variant="ghost" onClick={() => setOpenDialog(false)} disabled={openMut.isPending}>
               Cancel
             </Button>
             <Button
+              disabled={openMut.isPending}
               onClick={async () => {
                 if (!registerId || !currentRegister) return;
                 try {
@@ -347,10 +400,11 @@ function CashSessionsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCloseDialog(false)}>
+            <Button variant="ghost" onClick={() => setCloseDialog(false)} disabled={closeMut.isPending}>
               Cancel
             </Button>
             <Button
+              disabled={closeMut.isPending}
               onClick={async () => {
                 if (!openSession) return;
                 try {
@@ -398,10 +452,11 @@ function CashSessionsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEventDialog(null)}>
+            <Button variant="ghost" onClick={() => setEventDialog(null)} disabled={eventMut.isPending}>
               Cancel
             </Button>
             <Button
+              disabled={eventMut.isPending}
               onClick={async () => {
                 if (!openSession || !eventDialog) return;
                 try {

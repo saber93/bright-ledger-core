@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureAccountingPeriodUnlocked } from "@/features/accounting/locks";
 import { useAuth } from "@/lib/auth";
 
 export type CreditNoteSource = "invoice" | "pos" | "manual";
@@ -349,6 +350,8 @@ export function useCreateRefundMutation() {
     mutationFn: async (input: CreateRefundInput) => {
       if (!companyId) throw new Error("Missing company");
       if (input.lines.length === 0) throw new Error("Add at least one refund line");
+      const postingDate = new Date().toISOString().slice(0, 10);
+      await ensureAccountingPeriodUnlocked(companyId, postingDate, "refund posting");
 
       // ---- totals ----
       let subtotal = 0;
@@ -382,7 +385,8 @@ export function useCreateRefundMutation() {
         reason: input.reason,
         notes: input.notes ?? null,
         restock: input.restock,
-        status: "issued" as const,
+        status: "draft" as const,
+        issue_date: postingDate,
         subtotal,
         tax_total: taxTotal,
         total,
@@ -474,6 +478,7 @@ export function useCreateRefundMutation() {
             branch_id: a.branch_id ?? null,
             register_id: a.register_id ?? null,
             session_id: a.session_id ?? null,
+            paid_at: new Date().toISOString(),
             created_by: user?.id,
           });
 
@@ -579,6 +584,12 @@ export function useCreateRefundMutation() {
             .eq("id", input.source_pos_order_id);
         }
       }
+
+      const { error: issueErr } = await supabase
+        .from("credit_notes")
+        .update({ status: "issued" })
+        .eq("id", note.id);
+      if (issueErr) throw issueErr;
 
       return note.id as string;
     },

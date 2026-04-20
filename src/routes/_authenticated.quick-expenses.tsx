@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Receipt, Plus, Filter, X } from "lucide-react";
 import { PageHeader } from "@/components/data/PageHeader";
@@ -43,6 +43,8 @@ const METHOD_LABEL: Record<QuickExpenseMethod, string> = {
 };
 
 function QuickExpensesPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { data: settings } = useCompanySettings();
   const { company } = useAuth();
   const currency = company?.currency ?? "USD";
@@ -85,6 +87,10 @@ function QuickExpensesPage() {
     const taxTotal = list.reduce((s, r) => s + Number(r.tax_amount ?? 0), 0);
     return { count: list.length, totalAmount, unpaidCount: unpaid.length, unpaidAmount, taxTotal };
   }, [filtered]);
+
+  if (/^\/quick-expenses\/[^/]+$/.test(location.pathname)) {
+    return <Outlet />;
+  }
 
   if (settings && !settings.quick_expenses_enabled) {
     return (
@@ -273,8 +279,7 @@ function QuickExpensesPage() {
         loading={isLoading}
         data={filtered}
         onRowClick={(r) => {
-          setEditId(r.id);
-          setDrawerOpen(true);
+          void navigate({ to: "/quick-expenses/$expenseId", params: { expenseId: r.id } });
         }}
         emptyState={
           <EmptyState

@@ -5,38 +5,64 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { usePosOrder } from "@/features/pos/hooks";
+import { usePostingAudit } from "@/features/accounting/ledger";
+import { useFinancePermissions } from "@/features/accounting/permissions";
+import { DocumentCommunicationCard } from "@/components/delivery/DocumentCommunicationCard";
+import { SendDocumentDialog } from "@/components/delivery/SendDocumentDialog";
+import type { DocumentDelivery } from "@/features/delivery/hooks";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime, formatMoney } from "@/lib/format";
-import { ArrowLeft, FileText, Printer } from "lucide-react";
+import { ArrowLeft, FileText, Printer, Mail } from "lucide-react";
 import { RefundsHistory } from "@/components/refunds/RefundsHistory";
 import { openDocument } from "@/lib/open-document";
+import { PostingAuditCard } from "@/components/accounting/PostingAuditCard";
+import { useState } from "react";
+
+function PosOrderErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+
+  return (
+    <div className="p-6">
+      <p className="text-sm text-destructive">Error: {error.message}</p>
+      <Button
+        size="sm"
+        className="mt-2"
+        onClick={() => {
+          router.invalidate();
+          reset();
+        }}
+      >
+        Retry
+      </Button>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/pos-orders/$orderId")({
   component: PosOrderDetailPage,
-  errorComponent: ({ error, reset }) => {
-    const router = useRouter();
-    return (
-      <div className="p-6">
-        <p className="text-sm text-destructive">Error: {error.message}</p>
-        <Button
-          size="sm"
-          className="mt-2"
-          onClick={() => {
-            router.invalidate();
-            reset();
-          }}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  },
+  errorComponent: PosOrderErrorComponent,
 });
 
 function PosOrderDetailPage() {
   const { orderId } = Route.useParams();
   const { data, isLoading } = usePosOrder(orderId);
   const { company } = useAuth();
+  const finance = useFinancePermissions();
+  const [sendOpen, setSendOpen] = useState(false);
+  const [deliverySeed, setDeliverySeed] = useState<{
+    recipient?: string | null;
+    recipientName?: string | null;
+    subject?: string | null;
+    message?: string | null;
+    templateKey?: "pos_receipt_email";
+  } | null>(null);
+  const postingAudit = usePostingAudit({
+    sourceHrefs: data?.invoice
+      ? [`/pos-orders/${data.order.id}`, `/invoices/${data.invoice.id}`]
+      : data
+        ? [`/pos-orders/${data.order.id}`]
+        : [],
+  });
 
   if (isLoading) {
     return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
@@ -53,6 +79,21 @@ function PosOrderDetailPage() {
   }
   const { order, lines, pos_payments, invoice, payment_records } = data;
   const currency = order.currency || company?.currency || "USD";
+
+  function openSend(seed?: DocumentDelivery) {
+    setDeliverySeed(
+      seed
+        ? {
+            recipient: seed.recipient,
+            recipientName: seed.recipient_name,
+            subject: seed.subject,
+            message: seed.message,
+            templateKey: "pos_receipt_email",
+          }
+        : null,
+    );
+    setSendOpen(true);
+  }
 
   return (
     <div className="space-y-4">
@@ -77,9 +118,14 @@ function PosOrderDetailPage() {
             >
               <Printer className="mr-1 h-4 w-4" /> Print receipt
             </Button>
+            {finance.canSendPosReceipts && (
+              <Button variant="outline" onClick={() => openSend()}>
+                <Mail className="mr-1 h-4 w-4" /> Send receipt
+              </Button>
+            )}
             {invoice && (
               <Button asChild>
-                <Link to="/invoices">
+                <Link to="/invoices/$invoiceId" params={{ invoiceId: invoice.id }}>
                   <FileText className="mr-1 h-4 w-4" /> View invoice
                 </Link>
               </Button>
@@ -191,6 +237,27 @@ function PosOrderDetailPage() {
 
           <RefundsHistory source="pos" sourceId={order.id} currency={currency} />
 
+          <PostingAuditCard
+            audit={postingAudit.data}
+            currency={currency}
+            isLoading={postingAudit.isLoading}
+            emptyDescription="A completed POS order should trace to revenue, settlement, and inventory journals. If this stays empty, treat it as a posting issue."
+          />
+
+          <DocumentCommunicationCard
+            documentType="pos_receipt"
+            documentId={order.id}
+            title="Receipt delivery"
+            actions={
+              finance.canSendPosReceipts ? (
+                <Button size="sm" variant="outline" onClick={() => openSend()}>
+                  <Mail className="mr-1 h-3.5 w-3.5" /> Send
+                </Button>
+              ) : undefined
+            }
+            onResend={(delivery) => openSend(delivery)}
+          />
+
           {invoice && (
             <Card>
               <CardHeader>
@@ -212,6 +279,32 @@ function PosOrderDetailPage() {
           )}
         </div>
       </div>
+
+      <SendDocumentDialog
+        open={sendOpen}
+        onOpenChange={(open) => {
+          if (!open) setDeliverySeed(null);
+          setSendOpen(open);
+        }}
+        title="Send POS receipt"
+        description="Email the customer a secure receipt link and keep the resend history attached to this order."
+        documentType="pos_receipt"
+        documentId={order.id}
+        eventType="send"
+        templateOptions={[{ key: "pos_receipt_email", label: "Receipt email" }]}
+        defaultRecipient={order.customers?.email}
+        defaultRecipientName={order.customers?.name ?? "Customer"}
+        variables={{
+          company_name: company?.name,
+          recipient_name: order.customers?.name ?? "Customer",
+          customer_name: order.customers?.name ?? "Customer",
+          document_label: "receipt",
+          document_number: order.order_number,
+          document_date: formatDateTime(order.completed_at ?? order.created_at),
+          document_total: formatMoney(Number(order.total), currency),
+        }}
+        seed={deliverySeed}
+      />
     </div>
   );
 }

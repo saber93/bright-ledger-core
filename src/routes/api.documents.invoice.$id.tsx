@@ -9,7 +9,7 @@ import {
   notFoundHtml,
   renderDocumentHtml,
   requireDocumentAccess,
-} from "./api.documents.shared";
+} from "./-api.documents.shared";
 
 export const Route = createFileRoute("/api/documents/invoice/$id")({
   server: {
@@ -22,7 +22,10 @@ export const Route = createFileRoute("/api/documents/invoice/$id")({
           .maybeSingle();
         if (error || !invoice) return notFoundHtml("Invoice");
 
-        const guard = await requireDocumentAccess(request, invoice.company_id);
+        const guard = await requireDocumentAccess(request, invoice.company_id, {
+          documentType: "invoice",
+          documentId: invoice.id,
+        });
         if (!guard.ok) return guard.response;
 
         const [{ data: lines }, { data: payments }, { data: company }] = await Promise.all([

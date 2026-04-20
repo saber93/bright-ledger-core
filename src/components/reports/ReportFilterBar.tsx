@@ -15,13 +15,20 @@ import { Calendar } from "lucide-react";
 
 const ALL_BRANCHES = "__all__";
 
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function firstOfMonth() {
   const d = new Date();
   d.setDate(1);
-  return d.toISOString().slice(0, 10);
+  return formatDateInput(d);
 }
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return formatDateInput(new Date());
 }
 
 export function defaultFilters(): ReportFilters {
@@ -63,8 +70,8 @@ export function ReportFilterBar({
     }
     const next = {
       ...local,
-      from: from.toISOString().slice(0, 10),
-      to: to.toISOString().slice(0, 10),
+      from: formatDateInput(from),
+      to: formatDateInput(to),
     };
     setLocal(next);
     onChange(next);

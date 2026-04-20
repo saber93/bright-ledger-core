@@ -10,7 +10,7 @@ import {
   notFoundHtml,
   renderDocumentHtml,
   requireDocumentAccess,
-} from "./api.documents.shared";
+} from "./-api.documents.shared";
 
 export const Route = createFileRoute("/api/documents/quick-expense/$id")({
   server: {

@@ -1,17 +1,21 @@
 /**
  * Reports aggregation layer.
  *
- * Reconciliation guardrail: every hook reads directly from posted-document
- * tables (customer_invoices, pos_orders, pos_payments, payments,
- * quick_expenses, credit_notes, supplier_bills, cash_refunds,
- * cash_session_events). No materialized cache, no parallel aggregation
- * surface that could drift from the source documents.
+ * Group 5 reconciliation guardrail:
+ * - core financial statements read from the validated ledger source
+ *   (`public.accounting_ledger_lines`)
+ * - operational analytics keep reading document/subledger tables only where
+ *   the report is not itself a financial statement (sales mix, top items,
+ *   aging buckets, open drawer cash)
  *
  * Filters are inclusive on both endpoints: `from <= date <= to`.
- * Branch filter applies only where a branch_id column exists on the source
- * (POS orders, quick expenses, cash refunds, cash sessions).
+ * Branch filter applies only where the validated ledger can carry a branch.
  */
 import { useQuery } from "@tanstack/react-query";
+import {
+  fetchLedgerLines,
+  type LedgerLine,
+} from "@/features/accounting/ledger";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -29,6 +33,52 @@ const num = (v: unknown): number => {
 /** Build an inclusive end-of-day timestamp string for `<=` filters. */
 const endOfDay = (d: string) => `${d}T23:59:59.999Z`;
 const startOfDay = (d: string) => `${d}T00:00:00.000Z`;
+
+function sourceLabel(sourceType: string): string {
+  switch (sourceType) {
+    case "customer_invoice":
+      return "Invoice";
+    case "pos_invoice":
+      return "POS";
+    case "supplier_bill":
+      return "Bill";
+    case "quick_expense":
+      return "Quick Expense";
+    case "credit_note":
+      return "Credit Note";
+    case "pos_cogs":
+      return "POS COGS";
+    case "refund_restock":
+      return "Refund Restock";
+    case "customer_payment":
+      return "Customer Payment";
+    case "supplier_payment":
+      return "Supplier Payment";
+    case "cash_refund":
+      return "Cash Refund";
+    case "cash_session_transfer":
+      return "Drawer Transfer";
+    default:
+      return sourceType;
+  }
+}
+
+function getJournalRow<T extends { amount: number }>(
+  map: Map<string, T>,
+  line: LedgerLine,
+  create: () => T,
+  amount: number,
+) {
+  const existing = map.get(line.journal_key);
+  if (existing) {
+    existing.amount += amount;
+    return existing;
+  }
+  const next = create();
+  next.amount += amount;
+  map.set(line.journal_key, next);
+  return next;
+}
 
 // ============================================================================
 // PROFIT & LOSS
@@ -57,9 +107,11 @@ export interface ProfitLossData {
   expenses: {
     bills: number;
     quickExpenses: number;
+    cogs: number;
+    restockRecoveries: number;
     total: number;
     rows: Array<{
-      source: "Bill" | "Quick Expense";
+      source: "Bill" | "Quick Expense" | "POS COGS" | "Refund Restock";
       number: string;
       date: string;
       counterparty: string;
@@ -81,72 +133,105 @@ export function useProfitLoss(filters: ReportFilters) {
     queryKey: ["report-profit-loss", companyId, filters],
     enabled: !!companyId,
     queryFn: async (): Promise<ProfitLossData> => {
-      // Invoices: revenue from non-draft, non-cancelled invoices in the period
-      let invQ = supabase
-        .from("customer_invoices")
-        .select("id, invoice_number, issue_date, total, status, customers!inner(name)")
-        .eq("company_id", companyId!)
-        .gte("issue_date", filters.from)
-        .lte("issue_date", filters.to);
+      const lines = await fetchLedgerLines(companyId!, filters);
 
-      // POS: revenue from completed orders in the period
-      let posQ = supabase
-        .from("pos_orders")
-        .select("id, order_number, completed_at, created_at, total, status, branch_id")
-        .eq("company_id", companyId!)
-        .eq("status", "completed")
-        .gte("completed_at", startOfDay(filters.from))
-        .lte("completed_at", endOfDay(filters.to));
-      if (filters.branchId) posQ = posQ.eq("branch_id", filters.branchId);
+      const revenueRows = new Map<
+        string,
+        {
+          source: "Invoice" | "POS";
+          number: string;
+          date: string;
+          counterparty: string;
+          amount: number;
+        }
+      >();
+      const expenseRows = new Map<
+        string,
+        {
+          source: "Bill" | "Quick Expense" | "POS COGS" | "Refund Restock";
+          number: string;
+          date: string;
+          counterparty: string;
+          amount: number;
+        }
+      >();
 
-      // Bills: expense from non-draft, non-cancelled bills
-      const billQ = supabase
-        .from("supplier_bills")
-        .select("id, bill_number, issue_date, total, status, suppliers!inner(name)")
-        .eq("company_id", companyId!)
-        .gte("issue_date", filters.from)
-        .lte("issue_date", filters.to);
+      let invoiceRevenue = 0;
+      let posRevenue = 0;
+      let billExpense = 0;
+      let quickExpense = 0;
+      let cogs = 0;
+      let restockRecoveries = 0;
+      let refundTotal = 0;
 
-      // Quick expenses: expense in the period
-      let qeQ = supabase
-        .from("quick_expenses")
-        .select("id, expense_number, date, amount, tax_amount, description, branch_id, suppliers(name)")
-        .eq("company_id", companyId!)
-        .gte("date", filters.from)
-        .lte("date", filters.to);
-      if (filters.branchId) qeQ = qeQ.eq("branch_id", filters.branchId);
+      for (const line of lines) {
+        if (line.account_type === "income") {
+          if (line.source_type === "credit_note") {
+            refundTotal += line.debit;
+            continue;
+          }
 
-      // Refunds (credit notes): for net-revenue display
-      const cnQ = supabase
-        .from("credit_notes")
-        .select("id, total, status, issue_date")
-        .eq("company_id", companyId!)
-        .neq("status", "draft")
-        .neq("status", "void")
-        .gte("issue_date", filters.from)
-        .lte("issue_date", filters.to);
+          const amount = line.credit - line.debit;
+          if (amount <= 0.005) continue;
 
-      const [invRes, posRes, billRes, qeRes, cnRes] = await Promise.all([invQ, posQ, billQ, qeQ, cnQ]);
+          const source = line.source_type === "pos_invoice" ? "POS" : "Invoice";
+          getJournalRow(
+            revenueRows,
+            line,
+            () => ({
+              source,
+              number: line.document_number,
+              date: line.journal_date,
+              counterparty: line.counterparty_name ?? "—",
+              amount: 0,
+            }),
+            amount,
+          );
 
-      const invoices = (invRes.data ?? []).filter(
-        (i) => i.status !== "cancelled" && i.status !== "draft",
-      );
-      const posOrders = posRes.data ?? [];
-      const bills = (billRes.data ?? []).filter(
-        (b) => b.status !== "cancelled" && b.status !== "draft",
-      );
-      const quickExpenses = qeRes.data ?? [];
-      const creditNotes = cnRes.data ?? [];
+          if (source === "POS") {
+            posRevenue += amount;
+          } else {
+            invoiceRevenue += amount;
+          }
+        }
 
-      const invoiceRevenue = invoices.reduce((s, i) => s + num(i.total), 0);
-      const posRevenue = posOrders.reduce((s, o) => s + num(o.total), 0);
-      const billExpense = bills.reduce((s, b) => s + num(b.total), 0);
-      const qeExpense = quickExpenses.reduce((s, e) => s + num(e.amount) + num(e.tax_amount), 0);
-      const refundTotal = creditNotes.reduce((s, c) => s + num(c.total), 0);
+        if (line.account_type === "expense") {
+          const amount = line.debit - line.credit;
+          if (Math.abs(amount) <= 0.005) continue;
+
+          const source = (
+            line.source_type === "supplier_bill"
+              ? "Bill"
+              : line.source_type === "quick_expense"
+                ? "Quick Expense"
+                : line.source_type === "pos_cogs"
+                  ? "POS COGS"
+                  : "Refund Restock"
+          ) as "Bill" | "Quick Expense" | "POS COGS" | "Refund Restock";
+
+          getJournalRow(
+            expenseRows,
+            line,
+            () => ({
+              source,
+              number: line.document_number,
+              date: line.journal_date,
+              counterparty: line.counterparty_name ?? "—",
+              amount: 0,
+            }),
+            amount,
+          );
+
+          if (source === "Bill") billExpense += amount;
+          if (source === "Quick Expense") quickExpense += amount;
+          if (source === "POS COGS") cogs += amount;
+          if (source === "Refund Restock") restockRecoveries += amount;
+        }
+      }
 
       const grossRevenue = invoiceRevenue + posRevenue;
       const netRevenue = grossRevenue - refundTotal;
-      const totalExpenses = billExpense + qeExpense;
+      const totalExpenses = billExpense + quickExpense + cogs + restockRecoveries;
 
       return {
         filters,
@@ -154,44 +239,15 @@ export function useProfitLoss(filters: ReportFilters) {
           invoices: invoiceRevenue,
           pos: posRevenue,
           total: grossRevenue,
-          rows: [
-            ...invoices.map((i) => ({
-              source: "Invoice" as const,
-              number: i.invoice_number,
-              date: i.issue_date,
-              counterparty: (i.customers as { name?: string } | null)?.name ?? "—",
-              amount: num(i.total),
-            })),
-            ...posOrders.map((o) => ({
-              source: "POS" as const,
-              number: o.order_number,
-              date: (o.completed_at ?? o.created_at)?.slice(0, 10) ?? "",
-              counterparty: "Walk-in",
-              amount: num(o.total),
-            })),
-          ].sort((a, b) => (a.date < b.date ? 1 : -1)),
+          rows: Array.from(revenueRows.values()).sort((a, b) => (a.date < b.date ? 1 : -1)),
         },
         expenses: {
           bills: billExpense,
-          quickExpenses: qeExpense,
+          quickExpenses: quickExpense,
+          cogs,
+          restockRecoveries,
           total: totalExpenses,
-          rows: [
-            ...bills.map((b) => ({
-              source: "Bill" as const,
-              number: b.bill_number,
-              date: b.issue_date,
-              counterparty: (b.suppliers as { name?: string } | null)?.name ?? "—",
-              amount: num(b.total),
-            })),
-            ...quickExpenses.map((e) => ({
-              source: "Quick Expense" as const,
-              number: e.expense_number,
-              date: e.date,
-              counterparty:
-                (e.suppliers as { name?: string } | null)?.name ?? e.description ?? "—",
-              amount: num(e.amount) + num(e.tax_amount),
-            })),
-          ].sort((a, b) => (a.date < b.date ? 1 : -1)),
+          rows: Array.from(expenseRows.values()).sort((a, b) => (a.date < b.date ? 1 : -1)),
         },
         refunds: { total: refundTotal },
         grossRevenue,
@@ -367,57 +423,112 @@ export function useTaxSummary(filters: ReportFilters) {
     queryKey: ["report-tax", companyId, filters],
     enabled: !!companyId,
     queryFn: async (): Promise<TaxData> => {
-      const [invRes, posRes, billRes, qeRes, cnRes] = await Promise.all([
-        supabase
-          .from("customer_invoices")
-          .select("id, invoice_number, issue_date, subtotal, tax_total, status")
-          .eq("company_id", companyId!)
-          .gte("issue_date", filters.from)
-          .lte("issue_date", filters.to),
-        supabase
-          .from("pos_orders")
-          .select("id, order_number, completed_at, created_at, subtotal, tax_total, status")
-          .eq("company_id", companyId!)
-          .eq("status", "completed")
-          .gte("completed_at", startOfDay(filters.from))
-          .lte("completed_at", endOfDay(filters.to)),
-        supabase
-          .from("supplier_bills")
-          .select("id, bill_number, issue_date, subtotal, tax_total, status")
-          .eq("company_id", companyId!)
-          .gte("issue_date", filters.from)
-          .lte("issue_date", filters.to),
-        supabase
-          .from("quick_expenses")
-          .select("id, expense_number, date, amount, tax_amount")
-          .eq("company_id", companyId!)
-          .gte("date", filters.from)
-          .lte("date", filters.to),
-        supabase
-          .from("credit_notes")
-          .select("id, credit_note_number, issue_date, subtotal, tax_total, status")
-          .eq("company_id", companyId!)
-          .neq("status", "draft")
-          .neq("status", "void")
-          .gte("issue_date", filters.from)
-          .lte("issue_date", filters.to),
-      ]);
+      const lines = await fetchLedgerLines(companyId!, filters);
+      const journals = new Map<
+        string,
+        {
+          source: "Invoice" | "POS" | "Bill" | "Quick Expense" | "Credit Note";
+          number: string;
+          date: string;
+          taxable: number;
+          tax: number;
+          direction: "output" | "input" | "refund";
+        }
+      >();
 
-      const invoices = (invRes.data ?? []).filter(
-        (i) => i.status !== "cancelled" && i.status !== "draft",
-      );
-      const posOrders = posRes.data ?? [];
-      const bills = (billRes.data ?? []).filter(
-        (b) => b.status !== "cancelled" && b.status !== "draft",
-      );
-      const quickExpenses = qeRes.data ?? [];
-      const creditNotes = cnRes.data ?? [];
+      let invTax = 0;
+      let posTax = 0;
+      let billTax = 0;
+      let qeTax = 0;
+      let refundedTax = 0;
 
-      const invTax = invoices.reduce((s, i) => s + num(i.tax_total), 0);
-      const posTax = posOrders.reduce((s, o) => s + num(o.tax_total), 0);
-      const billTax = bills.reduce((s, b) => s + num(b.tax_total), 0);
-      const qeTax = quickExpenses.reduce((s, e) => s + num(e.tax_amount), 0);
-      const refundedTax = creditNotes.reduce((s, c) => s + num(c.tax_total), 0);
+      for (const line of lines) {
+        if (line.source_type === "customer_invoice" || line.source_type === "pos_invoice") {
+          if (line.account_type === "income") {
+            const entry = journals.get(line.journal_key) ?? {
+              source: line.source_type === "pos_invoice" ? "POS" : "Invoice",
+              number: line.document_number,
+              date: line.journal_date,
+              taxable: 0,
+              tax: 0,
+              direction: "output" as const,
+            };
+            entry.taxable += line.credit - line.debit;
+            journals.set(line.journal_key, entry);
+          }
+          if (line.account_code === "2200") {
+            const entry = journals.get(line.journal_key) ?? {
+              source: line.source_type === "pos_invoice" ? "POS" : "Invoice",
+              number: line.document_number,
+              date: line.journal_date,
+              taxable: 0,
+              tax: 0,
+              direction: "output" as const,
+            };
+            entry.tax += line.credit;
+            journals.set(line.journal_key, entry);
+            if (line.source_type === "pos_invoice") posTax += line.credit;
+            else invTax += line.credit;
+          }
+        }
+
+        if (line.source_type === "supplier_bill" || line.source_type === "quick_expense") {
+          if (line.account_type === "expense") {
+            const entry = journals.get(line.journal_key) ?? {
+              source: line.source_type === "supplier_bill" ? "Bill" : "Quick Expense",
+              number: line.document_number,
+              date: line.journal_date,
+              taxable: 0,
+              tax: 0,
+              direction: "input" as const,
+            };
+            entry.taxable += line.debit - line.credit;
+            journals.set(line.journal_key, entry);
+          }
+          if (line.account_code === "2200") {
+            const entry = journals.get(line.journal_key) ?? {
+              source: line.source_type === "supplier_bill" ? "Bill" : "Quick Expense",
+              number: line.document_number,
+              date: line.journal_date,
+              taxable: 0,
+              tax: 0,
+              direction: "input" as const,
+            };
+            entry.tax += line.debit;
+            journals.set(line.journal_key, entry);
+            if (line.source_type === "supplier_bill") billTax += line.debit;
+            else qeTax += line.debit;
+          }
+        }
+
+        if (line.source_type === "credit_note") {
+          if (line.account_type === "income") {
+            const entry = journals.get(line.journal_key) ?? {
+              source: "Credit Note",
+              number: line.document_number,
+              date: line.journal_date,
+              taxable: 0,
+              tax: 0,
+              direction: "refund" as const,
+            };
+            entry.taxable += line.debit - line.credit;
+            journals.set(line.journal_key, entry);
+          }
+          if (line.account_code === "2200") {
+            const entry = journals.get(line.journal_key) ?? {
+              source: "Credit Note",
+              number: line.document_number,
+              date: line.journal_date,
+              taxable: 0,
+              tax: 0,
+              direction: "refund" as const,
+            };
+            entry.tax += line.debit;
+            journals.set(line.journal_key, entry);
+            refundedTax += line.debit;
+          }
+        }
+      }
 
       const outputTotal = invTax + posTax;
       const inputTotal = billTax + qeTax;
@@ -428,48 +539,9 @@ export function useTaxSummary(filters: ReportFilters) {
         inputTax: { bills: billTax, quickExpenses: qeTax, total: inputTotal },
         refundedTax,
         netTaxPayable: outputTotal - refundedTax - inputTotal,
-        rows: [
-          ...invoices.map((i) => ({
-            source: "Invoice" as const,
-            number: i.invoice_number,
-            date: i.issue_date,
-            taxable: num(i.subtotal),
-            tax: num(i.tax_total),
-            direction: "output" as const,
-          })),
-          ...posOrders.map((o) => ({
-            source: "POS" as const,
-            number: o.order_number,
-            date: (o.completed_at ?? o.created_at)?.slice(0, 10) ?? "",
-            taxable: num(o.subtotal),
-            tax: num(o.tax_total),
-            direction: "output" as const,
-          })),
-          ...bills.map((b) => ({
-            source: "Bill" as const,
-            number: b.bill_number,
-            date: b.issue_date,
-            taxable: num(b.subtotal),
-            tax: num(b.tax_total),
-            direction: "input" as const,
-          })),
-          ...quickExpenses.map((e) => ({
-            source: "Quick Expense" as const,
-            number: e.expense_number,
-            date: e.date,
-            taxable: num(e.amount),
-            tax: num(e.tax_amount),
-            direction: "input" as const,
-          })),
-          ...creditNotes.map((c) => ({
-            source: "Credit Note" as const,
-            number: c.credit_note_number,
-            date: c.issue_date,
-            taxable: num(c.subtotal),
-            tax: num(c.tax_total),
-            direction: "refund" as const,
-          })),
-        ].sort((a, b) => (a.date < b.date ? 1 : -1)),
+        rows: Array.from(journals.values())
+          .filter((entry) => entry.tax > 0.005)
+          .sort((a, b) => (a.date < b.date ? 1 : -1)),
       };
     },
   });
@@ -483,19 +555,27 @@ export interface CashFlowData {
   filters: ReportFilters;
   inflow: {
     customerPayments: number;
-    posPayments: number;
-    cashIns: number;
     total: number;
   };
   outflow: {
     supplierPayments: number;
     quickExpenses: number;
     cashRefunds: number;
+    total: number;
+  };
+  transfers: {
+    cashIns: number;
     cashOuts: number;
     total: number;
   };
   netCashFlow: number;
-  byMethod: Array<{ method: string; inflow: number; outflow: number }>;
+  byMethod: Array<{
+    method: string;
+    inflow: number;
+    outflow: number;
+    transferIn: number;
+    transferOut: number;
+  }>;
   rows: Array<{
     date: string;
     type: string;
@@ -503,6 +583,8 @@ export interface CashFlowData {
     reference: string;
     inflow: number;
     outflow: number;
+    movementClass: "flow" | "transfer";
+    sourceHref?: string | null;
   }>;
 }
 
@@ -512,188 +594,167 @@ export function useCashFlow(filters: ReportFilters) {
     queryKey: ["report-cashflow", companyId, filters],
     enabled: !!companyId,
     queryFn: async (): Promise<CashFlowData> => {
-      // Invoice/Bill payments
-      const payQ = supabase
-        .from("payments")
-        .select("id, paid_at, amount, method, reference, direction")
-        .eq("company_id", companyId!)
-        .gte("paid_at", startOfDay(filters.from))
-        .lte("paid_at", endOfDay(filters.to));
+      const lines = await fetchLedgerLines(companyId!, filters);
 
-      // POS payments — derive via pos_orders for company filter & branch filter
-      let posOrdQ = supabase
-        .from("pos_orders")
-        .select("id, order_number, completed_at, branch_id, status")
-        .eq("company_id", companyId!)
-        .eq("status", "completed")
-        .gte("completed_at", startOfDay(filters.from))
-        .lte("completed_at", endOfDay(filters.to));
-      if (filters.branchId) posOrdQ = posOrdQ.eq("branch_id", filters.branchId);
+      const methodMap = new Map<
+        string,
+        { inflow: number; outflow: number; transferIn: number; transferOut: number }
+      >();
+      const rows: CashFlowData["rows"] = [];
 
-      // Quick expenses (cash outflow only when method = cash and paid)
-      let qeQ = supabase
-        .from("quick_expenses")
-        .select("id, expense_number, date, amount, tax_amount, payment_method, paid, branch_id")
-        .eq("company_id", companyId!)
-        .eq("paid", true)
-        .gte("date", filters.from)
-        .lte("date", filters.to);
-      if (filters.branchId) qeQ = qeQ.eq("branch_id", filters.branchId);
+      let customerPayments = 0;
+      let supplierPayments = 0;
+      let quickExpenses = 0;
+      let cashRefunds = 0;
+      let cashIns = 0;
+      let cashOuts = 0;
 
-      // Cash refunds
-      let crQ = supabase
-        .from("cash_refunds")
-        .select("id, paid_at, amount, method, reference, branch_id")
-        .eq("company_id", companyId!)
-        .gte("paid_at", startOfDay(filters.from))
-        .lte("paid_at", endOfDay(filters.to));
-      if (filters.branchId) crQ = crQ.eq("branch_id", filters.branchId);
-
-      // Cash session events — pay-in / pay-out / drop
-      let evQ = supabase
-        .from("cash_session_events")
-        .select(
-          "id, type, amount, reference, note, created_at, cash_sessions!inner(company_id, branch_id)",
-        )
-        .eq("cash_sessions.company_id", companyId!)
-        .gte("created_at", startOfDay(filters.from))
-        .lte("created_at", endOfDay(filters.to));
-      if (filters.branchId) evQ = evQ.eq("cash_sessions.branch_id", filters.branchId);
-
-      const [payRes, posOrdRes, qeRes, crRes, evRes] = await Promise.all([
-        payQ,
-        posOrdQ,
-        qeQ,
-        crQ,
-        evQ,
-      ]);
-
-      // Now get pos_payments for those orders
-      const posOrders = posOrdRes.data ?? [];
-      const orderIds = posOrders.map((o) => o.id);
-      const posPaymentsRes = orderIds.length
-        ? await supabase
-            .from("pos_payments")
-            .select("id, order_id, method, amount, reference, created_at")
-            .in("order_id", orderIds)
-        : { data: [] as Array<{ id: string; order_id: string; method: string; amount: number; reference: string | null; created_at: string }> };
-
-      const payments = payRes.data ?? [];
-      const posPayments = posPaymentsRes.data ?? [];
-      const quickExpenses = qeRes.data ?? [];
-      const cashRefunds = crRes.data ?? [];
-      const events = evRes.data ?? [];
-
-      const customerPayments = payments
-        .filter((p) => p.direction === "in")
-        .reduce((s, p) => s + num(p.amount), 0);
-      const supplierPayments = payments
-        .filter((p) => p.direction === "out")
-        .reduce((s, p) => s + num(p.amount), 0);
-      const posPaymentsTotal = posPayments.reduce((s, p) => s + num(p.amount), 0);
-      const qeTotal = quickExpenses.reduce((s, e) => s + num(e.amount) + num(e.tax_amount), 0);
-      const crTotal = cashRefunds.reduce((s, c) => s + num(c.amount), 0);
-      const cashIns = events
-        .filter((e) => e.type === "cash_in")
-        .reduce((s, e) => s + num(e.amount), 0);
-      const cashOuts = events
-        .filter((e) => e.type === "cash_out" || e.type === "payout")
-        .reduce((s, e) => s + num(e.amount), 0);
-
-      // By method aggregation
-      const methodMap = new Map<string, { inflow: number; outflow: number }>();
-      const bump = (m: string, key: "inflow" | "outflow", n: number) => {
-        const cur = methodMap.get(m) ?? { inflow: 0, outflow: 0 };
-        cur[key] += n;
-        methodMap.set(m, cur);
+      const bumpMethod = (
+        method: string,
+        key: "inflow" | "outflow" | "transferIn" | "transferOut",
+        amount: number,
+      ) => {
+        const current = methodMap.get(method) ?? {
+          inflow: 0,
+          outflow: 0,
+          transferIn: 0,
+          transferOut: 0,
+        };
+        current[key] += amount;
+        methodMap.set(method, current);
       };
-      for (const p of payments) {
-        bump(p.method, p.direction === "in" ? "inflow" : "outflow", num(p.amount));
-      }
-      for (const p of posPayments) {
-        bump(p.method, "inflow", num(p.amount));
-      }
-      for (const e of quickExpenses) {
-        bump(e.payment_method ?? "cash", "outflow", num(e.amount) + num(e.tax_amount));
-      }
-      for (const c of cashRefunds) {
-        bump(c.method ?? "cash", "outflow", num(c.amount));
-      }
 
-      const inflowTotal = customerPayments + posPaymentsTotal + cashIns;
-      const outflowTotal = supplierPayments + qeTotal + crTotal + cashOuts;
+      for (const line of lines) {
+        const accountCode = line.account_code ?? "";
+        if (!["1100", "1200"].includes(accountCode)) continue;
 
-      // Build rows in date order
-      const orderIdToInfo = new Map(
-        posOrders.map((o) => [o.id, { number: o.order_number, date: o.completed_at }]),
-      );
+        if (line.source_type === "cash_session_transfer") {
+          if (accountCode !== "1100") continue;
 
-      const rows = [
-        ...payments.map((p) => ({
-          date: p.paid_at?.slice(0, 10) ?? "",
-          type: p.direction === "in" ? "Customer Payment" : "Supplier Payment",
-          method: p.method,
-          reference: p.reference ?? "—",
-          inflow: p.direction === "in" ? num(p.amount) : 0,
-          outflow: p.direction === "out" ? num(p.amount) : 0,
-        })),
-        ...posPayments.map((p) => {
-          const info = orderIdToInfo.get(p.order_id);
-          return {
-            date: (info?.date ?? p.created_at)?.slice(0, 10) ?? "",
-            type: "POS Payment",
-            method: p.method,
-            reference: info?.number ?? p.reference ?? "—",
-            inflow: num(p.amount),
+          if (line.debit > 0) {
+            cashIns += line.debit;
+            bumpMethod("cash_transfer", "transferIn", line.debit);
+            rows.push({
+              date: line.journal_date,
+              type: "Drawer cash-in",
+              method: "cash_transfer",
+              reference: line.reference ?? line.document_number ?? "—",
+              inflow: line.debit,
+              outflow: 0,
+              movementClass: "transfer",
+              sourceHref: line.source_href,
+            });
+          } else if (line.credit > 0) {
+            cashOuts += line.credit;
+            bumpMethod("cash_transfer", "transferOut", line.credit);
+            rows.push({
+              date: line.journal_date,
+              type: "Drawer cash-out",
+              method: "cash_transfer",
+              reference: line.reference ?? line.document_number ?? "—",
+              inflow: 0,
+              outflow: line.credit,
+              movementClass: "transfer",
+              sourceHref: line.source_href,
+            });
+          }
+          continue;
+        }
+
+        const method = line.payment_method ?? "bank_transfer";
+        if (line.source_type === "customer_payment" && line.debit > 0) {
+          customerPayments += line.debit;
+          bumpMethod(method, "inflow", line.debit);
+          rows.push({
+            date: line.journal_date,
+            type: "Customer payment",
+            method,
+            reference: line.reference ?? line.document_number ?? "—",
+            inflow: line.debit,
             outflow: 0,
-          };
-        }),
-        ...quickExpenses.map((e) => ({
-          date: e.date,
-          type: "Quick Expense",
-          method: e.payment_method ?? "cash",
-          reference: e.expense_number,
-          inflow: 0,
-          outflow: num(e.amount) + num(e.tax_amount),
-        })),
-        ...cashRefunds.map((c) => ({
-          date: c.paid_at?.slice(0, 10) ?? "",
-          type: "Cash Refund",
-          method: c.method ?? "cash",
-          reference: c.reference ?? "—",
-          inflow: 0,
-          outflow: num(c.amount),
-        })),
-        ...events.map((e) => ({
-          date: e.created_at?.slice(0, 10) ?? "",
-          type: `Drawer ${e.type}`,
-          method: "cash",
-          reference: e.reference ?? e.note ?? "—",
-          inflow: e.type === "cash_in" ? num(e.amount) : 0,
-          outflow: e.type === "cash_out" || e.type === "payout" ? num(e.amount) : 0,
-        })),
-      ].sort((a, b) => (a.date < b.date ? 1 : -1));
+            movementClass: "flow",
+            sourceHref: line.source_href,
+          });
+        }
+
+        if (line.source_type === "supplier_payment" && line.credit > 0) {
+          supplierPayments += line.credit;
+          bumpMethod(method, "outflow", line.credit);
+          rows.push({
+            date: line.journal_date,
+            type: "Supplier payment",
+            method,
+            reference: line.reference ?? line.document_number ?? "—",
+            inflow: 0,
+            outflow: line.credit,
+            movementClass: "flow",
+            sourceHref: line.source_href,
+          });
+        }
+
+        if (line.source_type === "quick_expense" && line.credit > 0) {
+          quickExpenses += line.credit;
+          bumpMethod(method, "outflow", line.credit);
+          rows.push({
+            date: line.journal_date,
+            type: "Quick expense",
+            method,
+            reference: line.reference ?? line.document_number ?? "—",
+            inflow: 0,
+            outflow: line.credit,
+            movementClass: "flow",
+            sourceHref: line.source_href,
+          });
+        }
+
+        if (line.source_type === "cash_refund" && line.credit > 0) {
+          cashRefunds += line.credit;
+          bumpMethod(method, "outflow", line.credit);
+          rows.push({
+            date: line.journal_date,
+            type: "Cash refund",
+            method,
+            reference: line.reference ?? line.document_number ?? "—",
+            inflow: 0,
+            outflow: line.credit,
+            movementClass: "flow",
+            sourceHref: line.source_href,
+          });
+        }
+      }
+
+      const inflowTotal = customerPayments;
+      const outflowTotal = supplierPayments + quickExpenses + cashRefunds;
 
       return {
         filters,
         inflow: {
           customerPayments,
-          posPayments: posPaymentsTotal,
-          cashIns,
           total: inflowTotal,
         },
         outflow: {
           supplierPayments,
-          quickExpenses: qeTotal,
-          cashRefunds: crTotal,
-          cashOuts,
+          quickExpenses,
+          cashRefunds,
           total: outflowTotal,
+        },
+        transfers: {
+          cashIns,
+          cashOuts,
+          total: cashIns + cashOuts,
         },
         netCashFlow: inflowTotal - outflowTotal,
         byMethod: Array.from(methodMap.entries())
-          .map(([method, v]) => ({ method, ...v }))
-          .sort((a, b) => b.inflow + b.outflow - (a.inflow + a.outflow)),
-        rows,
+          .map(([method, values]) => ({ method, ...values }))
+          .sort(
+            (a, b) =>
+              b.inflow +
+              b.outflow +
+              b.transferIn +
+              b.transferOut -
+              (a.inflow + a.outflow + a.transferIn + a.transferOut),
+          ),
+        rows: rows.sort((a, b) => (a.date < b.date ? 1 : -1)),
       };
     },
   });
@@ -822,6 +883,101 @@ export function useCashByBranch() {
         map.set(id, cur);
       }
       return Array.from(map.values()).sort((a, b) => b.expectedCash - a.expectedCash);
+    },
+  });
+}
+
+export interface TopItem {
+  label: string;
+  quantity: number;
+  amount: number;
+  lines: number;
+}
+
+export function useTopItems(filters: ReportFilters, limit = 5) {
+  const { companyId } = useAuth();
+  return useQuery({
+    queryKey: ["top-items", companyId, filters, limit],
+    enabled: !!companyId,
+    queryFn: async (): Promise<TopItem[]> => {
+      const invQ = supabase
+        .from("customer_invoices")
+        .select("id, status")
+        .eq("company_id", companyId!)
+        .gte("issue_date", filters.from)
+        .lte("issue_date", filters.to);
+
+      let posQ = supabase
+        .from("pos_orders")
+        .select("id, branch_id")
+        .eq("company_id", companyId!)
+        .eq("status", "completed")
+        .gte("completed_at", startOfDay(filters.from))
+        .lte("completed_at", endOfDay(filters.to));
+      if (filters.branchId) posQ = posQ.eq("branch_id", filters.branchId);
+
+      const [invRes, posRes] = await Promise.all([invQ, posQ]);
+      if (invRes.error) throw invRes.error;
+      if (posRes.error) throw posRes.error;
+
+      const invoiceIds = (invRes.data ?? [])
+        .filter((invoice) => invoice.status !== "draft" && invoice.status !== "cancelled")
+        .map((invoice) => invoice.id);
+      const posOrderIds = (posRes.data ?? []).map((order) => order.id);
+
+      const [invoiceLinesRes, posLinesRes] = await Promise.all([
+        invoiceIds.length > 0
+          ? supabase
+              .from("invoice_lines")
+              .select("description, quantity, line_total")
+              .in("invoice_id", invoiceIds)
+          : Promise.resolve({
+              data: [] as Array<{
+                description: string;
+                quantity: number | string;
+                line_total: number | string;
+              }>,
+              error: null,
+            }),
+        posOrderIds.length > 0
+          ? supabase
+              .from("pos_order_lines")
+              .select("description, quantity, line_total")
+              .in("order_id", posOrderIds)
+          : Promise.resolve({
+              data: [] as Array<{
+                description: string;
+                quantity: number | string;
+                line_total: number | string;
+              }>,
+              error: null,
+            }),
+      ]);
+
+      if (invoiceLinesRes.error) throw invoiceLinesRes.error;
+      if (posLinesRes.error) throw posLinesRes.error;
+
+      const itemMap = new Map<string, TopItem>();
+
+      const addLine = (description: string | null | undefined, quantity: unknown, amount: unknown) => {
+        const label = description?.trim() || "Unnamed item";
+        const current = itemMap.get(label) ?? { label, quantity: 0, amount: 0, lines: 0 };
+        current.quantity += num(quantity);
+        current.amount += num(amount);
+        current.lines += 1;
+        itemMap.set(label, current);
+      };
+
+      for (const line of invoiceLinesRes.data ?? []) {
+        addLine(line.description, line.quantity, line.line_total);
+      }
+      for (const line of posLinesRes.data ?? []) {
+        addLine(line.description, line.quantity, line.line_total);
+      }
+
+      return Array.from(itemMap.values())
+        .sort((a, b) => b.amount - a.amount || b.quantity - a.quantity)
+        .slice(0, limit);
     },
   });
 }

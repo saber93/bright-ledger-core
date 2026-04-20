@@ -1,0 +1,62 @@
+name: Collections Automation
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+  workflow_dispatch:
+    inputs:
+      company_id:
+        description: "Override company id for this run"
+        required: false
+
+jobs:
+  run-collections:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate required secrets
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          COMMUNICATIONS_CRON_SECRET: ${{ secrets.COMMUNICATIONS_CRON_SECRET }}
+          DEFAULT_COMPANY_ID: ${{ secrets.COMMUNICATIONS_COMPANY_ID }}
+          INPUT_COMPANY_ID: ${{ github.event.inputs.company_id }}
+        run: |
+          set -euo pipefail
+          COMPANY_ID="${INPUT_COMPANY_ID:-$DEFAULT_COMPANY_ID}"
+          if [ -z "${APP_BASE_URL:-}" ]; then
+            echo "::error::Missing APP_BASE_URL secret."
+            exit 1
+          fi
+          if [ -z "${COMMUNICATIONS_CRON_SECRET:-}" ]; then
+            echo "::error::Missing COMMUNICATIONS_CRON_SECRET secret."
+            exit 1
+          fi
+          if [ -z "${COMPANY_ID:-}" ]; then
+            echo "::error::Missing COMMUNICATIONS_COMPANY_ID secret or workflow_dispatch company_id input."
+            exit 1
+          fi
+          echo "COMPANY_ID=$COMPANY_ID" >> "$GITHUB_ENV"
+          echo "BASE_URL=${APP_BASE_URL%/}" >> "$GITHUB_ENV"
+
+      - name: Run scheduled reminders / statements
+        env:
+          COMMUNICATIONS_CRON_SECRET: ${{ secrets.COMMUNICATIONS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body \
+            --request POST \
+            --url "$BASE_URL/api/communications/run-scheduled" \
+            --header "Content-Type: application/json" \
+            --header "x-communications-secret: $COMMUNICATIONS_CRON_SECRET" \
+            --data "{\"companyId\":\"$COMPANY_ID\"}"
+
+      - name: Process communications queue
+        env:
+          COMMUNICATIONS_CRON_SECRET: ${{ secrets.COMMUNICATIONS_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body \
+            --request POST \
+            --url "$BASE_URL/api/communications/process-queue" \
+            --header "Content-Type: application/json" \
+            --header "x-communications-secret: $COMMUNICATIONS_CRON_SECRET" \
+            --data "{\"companyId\":\"$COMPANY_ID\",\"limit\":50}"

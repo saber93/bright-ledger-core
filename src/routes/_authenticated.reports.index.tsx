@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/data/PageHeader";
-import { BarChart3, FileText, TrendingUp, PieChart, Wallet, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  FileText,
+  PieChart,
+  Scale,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
   component: ReportsIndexPage,
@@ -44,16 +53,25 @@ const tiles: Tile[] = [
     available: true,
   },
   {
+    href: "/reports/ledger",
+    icon: BookOpen,
+    name: "General Ledger",
+    desc: "Account drill-down with journal lines and running balance.",
+    available: true,
+  },
+  {
+    href: "/reports/balance-sheet",
     icon: FileText,
     name: "Balance Sheet",
     desc: "Assets, liabilities, and equity.",
-    available: false,
+    available: true,
   },
   {
-    icon: FileText,
+    href: "/reports/trial-balance",
+    icon: Scale,
     name: "Trial Balance",
     desc: "All ledger account balances.",
-    available: false,
+    available: true,
   },
 ];
 

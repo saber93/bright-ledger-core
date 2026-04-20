@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureAccountingPeriodUnlocked } from "@/features/accounting/locks";
 import { useAuth } from "@/lib/auth";
 
 export interface RecordInvoicePaymentInput {
@@ -24,6 +25,7 @@ export function useRecordInvoicePayment() {
     mutationFn: async (input: RecordInvoicePaymentInput) => {
       if (!companyId) throw new Error("Missing company");
       if (input.amount <= 0) throw new Error("Amount must be greater than zero");
+      await ensureAccountingPeriodUnlocked(companyId, input.paid_at, "customer payment");
 
       // Read current invoice state
       const { data: inv, error: invErr } = await supabase

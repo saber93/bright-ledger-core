@@ -6,6 +6,8 @@ export interface CompanySettings {
   id: string;
   company_id: string;
   accounting_enabled: boolean;
+  accounting_lock_date: string | null;
+  accounting_lock_reason: string | null;
   inventory_enabled: boolean;
   stock_tracking_enabled: boolean;
   online_store_enabled: boolean;

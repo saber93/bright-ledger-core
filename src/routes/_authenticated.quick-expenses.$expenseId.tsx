@@ -1,22 +1,23 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Receipt, Trash2, Pencil, FileText, Loader2, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import {
-  useDeleteQuickExpense,
   useQuickExpense,
   getReceiptSignedUrl,
 } from "@/features/quick-expenses/hooks";
 import { useAuth } from "@/lib/auth";
 import { openDocument } from "@/lib/open-document";
-import { QuickExpenseDrawer } from "@/components/quick-expenses/QuickExpenseDrawer";
+import { PostingAuditCard } from "@/components/accounting/PostingAuditCard";
+import { usePostingAudit } from "@/features/accounting/ledger";
+import { useAccountingPeriodState } from "@/features/accounting/controls";
 
 export const Route = createFileRoute("/_authenticated/quick-expenses/$expenseId")({
   component: QuickExpenseDetailPage,
@@ -44,16 +45,17 @@ interface QuickExpenseDetail {
 
 function QuickExpenseDetailPage() {
   const { expenseId } = Route.useParams();
-  const navigate = useNavigate();
   const { company } = useAuth();
   const currency = company?.currency ?? "USD";
   const { data, isLoading } = useQuickExpense(expenseId);
-  const del = useDeleteQuickExpense();
-
-  const [edit, setEdit] = useState(false);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
   const detail = data as QuickExpenseDetail | null;
+  const periodState = useAccountingPeriodState(detail?.date);
+  const postingAudit = usePostingAudit({
+    documentType: "quick_expense",
+    documentIds: detail ? [detail.id] : [],
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -97,19 +99,9 @@ function QuickExpenseDetailPage() {
     other: "Other",
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Delete this expense?")) return;
-    try {
-      await del.mutateAsync(expenseId);
-      toast.success("Expense deleted");
-      navigate({ to: "/quick-expenses" });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Delete failed");
-    }
-  };
-
   const isImage = signedUrl && !/\.pdf(\?|$)/i.test(signedUrl);
   const isPdf = signedUrl && /\.pdf(\?|$)/i.test(signedUrl);
+  const isLocked = !!periodState.data?.is_locked;
 
   return (
     <div className="space-y-4">
@@ -145,15 +137,23 @@ function QuickExpenseDetailPage() {
             >
               <Printer className="mr-1 h-4 w-4" /> Print / PDF
             </Button>
-            <Button variant="outline" onClick={() => setEdit(true)}>
-              <Pencil className="mr-1 h-4 w-4" /> Edit
-            </Button>
-            <Button variant="ghost" className="text-destructive" onClick={handleDelete}>
-              <Trash2 className="mr-1 h-4 w-4" /> Delete
-            </Button>
           </div>
         }
       />
+
+      <Alert>
+        <Receipt className="h-4 w-4" />
+        <AlertTitle>Posted operational source</AlertTitle>
+        <AlertDescription>
+          Quick expenses post to the validated ledger immediately. Amounts, tax, account routing, and payment treatment are intentionally immutable after posting.
+          {isLocked && (
+            <span className="block pt-2 text-xs text-muted-foreground">
+              This expense sits inside the closed period {periodState.data?.label}.
+              {periodState.data?.reason ? ` ${periodState.data.reason}` : ""}
+            </span>
+          )}
+        </AlertDescription>
+      </Alert>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -227,62 +227,12 @@ function QuickExpenseDetailPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Accounting impact</CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs">
-              <table className="w-full">
-                <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  <tr>
-                    <th className="pb-1 text-left font-medium">Account</th>
-                    <th className="pb-1 text-right font-medium">Dr</th>
-                    <th className="pb-1 text-right font-medium">Cr</th>
-                  </tr>
-                </thead>
-                <tbody className="font-mono">
-                  <tr>
-                    <td className="py-0.5">
-                      {detail.account
-                        ? `${detail.account.code} ${detail.account.name}`
-                        : "Expense"}
-                    </td>
-                    <td className="py-0.5 text-right">
-                      {formatMoney(detail.amount, currency)}
-                    </td>
-                    <td className="py-0.5 text-right text-muted-foreground">—</td>
-                  </tr>
-                  {Number(detail.tax_amount) > 0 && (
-                    <tr>
-                      <td className="py-0.5">Input tax</td>
-                      <td className="py-0.5 text-right">
-                        {formatMoney(detail.tax_amount, currency)}
-                      </td>
-                      <td className="py-0.5 text-right text-muted-foreground">—</td>
-                    </tr>
-                  )}
-                  <tr>
-                    <td className="py-0.5">
-                      {detail.paid
-                        ? methodLabel[detail.payment_method]
-                        : detail.payable
-                          ? `${detail.payable.code} ${detail.payable.name}`
-                          : "AP"}
-                    </td>
-                    <td className="py-0.5 text-right text-muted-foreground">—</td>
-                    <td className="py-0.5 text-right">{formatMoney(total, currency)}</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr className="border-t">
-                    <td className="pt-1 text-[10px] uppercase text-muted-foreground">Balance</td>
-                    <td className="pt-1 text-right">{formatMoney(total, currency)}</td>
-                    <td className="pt-1 text-right">{formatMoney(total, currency)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </CardContent>
-          </Card>
+          <PostingAuditCard
+            audit={postingAudit.data}
+            currency={currency}
+            isLoading={postingAudit.isLoading}
+            emptyDescription="A quick expense should produce one posted expense journal immediately. If this stays empty after saving, treat it as a posting issue."
+          />
 
           <Card>
             <CardHeader>
@@ -324,8 +274,6 @@ function QuickExpenseDetailPage() {
           </Card>
         </div>
       </div>
-
-      <QuickExpenseDrawer open={edit} onOpenChange={setEdit} expenseId={expenseId} />
     </div>
   );
 }

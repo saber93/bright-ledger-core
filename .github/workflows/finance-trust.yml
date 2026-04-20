@@ -1,0 +1,96 @@
+name: Finance Trust
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+concurrency:
+  group: finance-trust-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  finance-trust:
+    name: finance-trust
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PLAYWRIGHT_PROOF_EMAIL: ${{ secrets.PLAYWRIGHT_PROOF_EMAIL }}
+      PLAYWRIGHT_PROOF_PASSWORD: ${{ secrets.PLAYWRIGHT_PROOF_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+
+      - name: Check finance proof secrets
+        shell: bash
+        run: |
+          missing=0
+          for name in \
+            VITE_SUPABASE_URL \
+            VITE_SUPABASE_PUBLISHABLE_KEY \
+            SUPABASE_URL \
+            SUPABASE_PUBLISHABLE_KEY \
+            SUPABASE_SERVICE_ROLE_KEY \
+            PLAYWRIGHT_PROOF_EMAIL \
+            PLAYWRIGHT_PROOF_PASSWORD
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing finance CI secret::$name is required for the finance-trust workflow."
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+
+      - name: Summarize finance-impacting paths
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          pattern='^(supabase/migrations/|src/features/accounting/|src/features/reports/|src/features/dashboard/|src/features/(invoices|payments|refunds|quick-expenses|pos|bills)/|src/routes/_authenticated\.(dashboard|reports|invoices|bills|payments|refunds|quick-expenses|pos|cash-sessions).*\.(ts|tsx)$|src/routes/-?api\.documents.*\.(ts|tsx)$|tests/regression/)'
+          changed="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          finance_changed="$(printf '%s\n' "$changed" | grep -E "$pattern" || true)"
+
+          {
+            echo "## Finance impact scan"
+            if [ -n "$finance_changed" ]; then
+              echo
+              echo "Finance-impacting files detected:"
+              while IFS= read -r file; do
+                [ -n "$file" ] || continue
+                echo "- \`$file\`"
+              done <<< "$finance_changed"
+              echo
+              echo "This pull request must keep the \`finance-trust\` job green and follow \`docs/finance-release-checklist.md\`."
+            else
+              echo
+              echo "No finance-impacting paths matched the release-enforcement patterns."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run finance proof harness
+        run: npm run test:proof

@@ -26,33 +26,50 @@ import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated.inventory'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated.customers'
+import { Route as AuthenticatedCollectionsRouteImport } from './routes/_authenticated.collections'
 import { Route as AuthenticatedCashSessionsRouteImport } from './routes/_authenticated.cash-sessions'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated.bills'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated.settings.index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated.reports.index'
+import { Route as ApiCommunicationsSendRouteImport } from './routes/api.communications.send'
+import { Route as ApiCommunicationsRunScheduledRouteImport } from './routes/api.communications.run-scheduled'
+import { Route as ApiCommunicationsRetryRouteImport } from './routes/api.communications.retry'
+import { Route as ApiCommunicationsProcessQueueRouteImport } from './routes/api.communications.process-queue'
+import { Route as ApiCommunicationsBatchSendRouteImport } from './routes/api.communications.batch-send'
+import { Route as ApiCommunicationsBatchPreviewRouteImport } from './routes/api.communications.batch-preview'
+import { Route as ApiCollectionsDashboardRouteImport } from './routes/api.collections.dashboard'
 import { Route as AuthenticatedStoreOrderIdRouteImport } from './routes/_authenticated.store.$orderId'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated.settings.users'
 import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_authenticated.settings.tax-rates'
 import { Route as AuthenticatedSettingsModulesRouteImport } from './routes/_authenticated.settings.modules'
+import { Route as AuthenticatedSettingsDocumentTemplatesRouteImport } from './routes/_authenticated.settings.document-templates'
+import { Route as AuthenticatedSettingsCollectionsRouteImport } from './routes/_authenticated.settings.collections'
 import { Route as AuthenticatedSettingsBranchesRouteImport } from './routes/_authenticated.settings.branches'
 import { Route as AuthenticatedSalesOrderIdRouteImport } from './routes/_authenticated.sales.$orderId'
+import { Route as AuthenticatedReportsTrialBalanceRouteImport } from './routes/_authenticated.reports.trial-balance'
 import { Route as AuthenticatedReportsTaxRouteImport } from './routes/_authenticated.reports.tax'
 import { Route as AuthenticatedReportsSalesRouteImport } from './routes/_authenticated.reports.sales'
 import { Route as AuthenticatedReportsProfitLossRouteImport } from './routes/_authenticated.reports.profit-loss'
+import { Route as AuthenticatedReportsLedgerRouteImport } from './routes/_authenticated.reports.ledger'
 import { Route as AuthenticatedReportsCashFlowRouteImport } from './routes/_authenticated.reports.cash-flow'
+import { Route as AuthenticatedReportsBalanceSheetRouteImport } from './routes/_authenticated.reports.balance-sheet'
 import { Route as AuthenticatedRefundsCreditNoteIdRouteImport } from './routes/_authenticated.refunds.$creditNoteId'
 import { Route as AuthenticatedQuickExpensesExpenseIdRouteImport } from './routes/_authenticated.quick-expenses.$expenseId'
 import { Route as AuthenticatedPosOrdersOrderIdRouteImport } from './routes/_authenticated.pos-orders.$orderId'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated.invoices.$invoiceId'
 import { Route as AuthenticatedInventoryProductIdRouteImport } from './routes/_authenticated.inventory.$productId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
+import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated.bills.$billId'
+import { Route as AuthenticatedAccountingControlsRouteImport } from './routes/_authenticated.accounting.controls'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
 import { Route as ApiDocumentsQuickExpenseIdRouteImport } from './routes/api.documents.quick-expense.$id'
 import { Route as ApiDocumentsPosReceiptIdRouteImport } from './routes/api.documents.pos-receipt.$id'
 import { Route as ApiDocumentsInvoiceIdRouteImport } from './routes/api.documents.invoice.$id'
+import { Route as ApiDocumentsCustomerStatementCustomerIdRouteImport } from './routes/api.documents.customer-statement.$customerId'
 import { Route as ApiDocumentsCreditNoteIdRouteImport } from './routes/api.documents.credit-note.$id'
 import { Route as ApiDocumentsCashSessionIdRouteImport } from './routes/api.documents.cash-session.$id'
 import { Route as ApiDocumentsBillIdRouteImport } from './routes/api.documents.bill.$id'
+import { Route as ApiCommunicationsWebhooksResendRouteImport } from './routes/api.communications.webhooks.resend'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -139,6 +156,12 @@ const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCollectionsRoute =
+  AuthenticatedCollectionsRouteImport.update({
+    id: '/collections',
+    path: '/collections',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCashSessionsRoute =
   AuthenticatedCashSessionsRouteImport.update({
     id: '/cash-sessions',
@@ -162,6 +185,45 @@ const AuthenticatedReportsIndexRoute =
     path: '/reports/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiCommunicationsSendRoute = ApiCommunicationsSendRouteImport.update({
+  id: '/api/communications/send',
+  path: '/api/communications/send',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCommunicationsRunScheduledRoute =
+  ApiCommunicationsRunScheduledRouteImport.update({
+    id: '/api/communications/run-scheduled',
+    path: '/api/communications/run-scheduled',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCommunicationsRetryRoute = ApiCommunicationsRetryRouteImport.update({
+  id: '/api/communications/retry',
+  path: '/api/communications/retry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCommunicationsProcessQueueRoute =
+  ApiCommunicationsProcessQueueRouteImport.update({
+    id: '/api/communications/process-queue',
+    path: '/api/communications/process-queue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCommunicationsBatchSendRoute =
+  ApiCommunicationsBatchSendRouteImport.update({
+    id: '/api/communications/batch-send',
+    path: '/api/communications/batch-send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCommunicationsBatchPreviewRoute =
+  ApiCommunicationsBatchPreviewRouteImport.update({
+    id: '/api/communications/batch-preview',
+    path: '/api/communications/batch-preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCollectionsDashboardRoute = ApiCollectionsDashboardRouteImport.update({
+  id: '/api/collections/dashboard',
+  path: '/api/collections/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedStoreOrderIdRoute =
   AuthenticatedStoreOrderIdRouteImport.update({
     id: '/$orderId',
@@ -186,6 +248,18 @@ const AuthenticatedSettingsModulesRoute =
     path: '/modules',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedSettingsDocumentTemplatesRoute =
+  AuthenticatedSettingsDocumentTemplatesRouteImport.update({
+    id: '/document-templates',
+    path: '/document-templates',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsCollectionsRoute =
+  AuthenticatedSettingsCollectionsRouteImport.update({
+    id: '/collections',
+    path: '/collections',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedSettingsBranchesRoute =
   AuthenticatedSettingsBranchesRouteImport.update({
     id: '/branches',
@@ -197,6 +271,12 @@ const AuthenticatedSalesOrderIdRoute =
     id: '/$orderId',
     path: '/$orderId',
     getParentRoute: () => AuthenticatedSalesRoute,
+  } as any)
+const AuthenticatedReportsTrialBalanceRoute =
+  AuthenticatedReportsTrialBalanceRouteImport.update({
+    id: '/reports/trial-balance',
+    path: '/reports/trial-balance',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedReportsTaxRoute = AuthenticatedReportsTaxRouteImport.update({
   id: '/reports/tax',
@@ -215,10 +295,22 @@ const AuthenticatedReportsProfitLossRoute =
     path: '/reports/profit-loss',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedReportsLedgerRoute =
+  AuthenticatedReportsLedgerRouteImport.update({
+    id: '/reports/ledger',
+    path: '/reports/ledger',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedReportsCashFlowRoute =
   AuthenticatedReportsCashFlowRouteImport.update({
     id: '/reports/cash-flow',
     path: '/reports/cash-flow',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsBalanceSheetRoute =
+  AuthenticatedReportsBalanceSheetRouteImport.update({
+    id: '/reports/balance-sheet',
+    path: '/reports/balance-sheet',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedRefundsCreditNoteIdRoute =
@@ -257,6 +349,18 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/$customerId',
     getParentRoute: () => AuthenticatedCustomersRoute,
   } as any)
+const AuthenticatedBillsBillIdRoute =
+  AuthenticatedBillsBillIdRouteImport.update({
+    id: '/$billId',
+    path: '/$billId',
+    getParentRoute: () => AuthenticatedBillsRoute,
+  } as any)
+const AuthenticatedAccountingControlsRoute =
+  AuthenticatedAccountingControlsRouteImport.update({
+    id: '/accounting/controls',
+    path: '/accounting/controls',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAccountingCoaRoute =
   AuthenticatedAccountingCoaRouteImport.update({
     id: '/accounting/coa',
@@ -280,6 +384,12 @@ const ApiDocumentsInvoiceIdRoute = ApiDocumentsInvoiceIdRouteImport.update({
   path: '/api/documents/invoice/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDocumentsCustomerStatementCustomerIdRoute =
+  ApiDocumentsCustomerStatementCustomerIdRouteImport.update({
+    id: '/api/documents/customer-statement/$customerId',
+    path: '/api/documents/customer-statement/$customerId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiDocumentsCreditNoteIdRoute =
   ApiDocumentsCreditNoteIdRouteImport.update({
     id: '/api/documents/credit-note/$id',
@@ -297,13 +407,20 @@ const ApiDocumentsBillIdRoute = ApiDocumentsBillIdRouteImport.update({
   path: '/api/documents/bill/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCommunicationsWebhooksResendRoute =
+  ApiCommunicationsWebhooksResendRouteImport.update({
+    id: '/api/communications/webhooks/resend',
+    path: '/api/communications/webhooks/resend',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/bills': typeof AuthenticatedBillsRoute
+  '/bills': typeof AuthenticatedBillsRouteWithChildren
   '/cash-sessions': typeof AuthenticatedCashSessionsRoute
+  '/collections': typeof AuthenticatedCollectionsRoute
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRouteWithChildren
@@ -318,27 +435,43 @@ export interface FileRoutesByFullPath {
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
+  '/accounting/controls': typeof AuthenticatedAccountingControlsRoute
+  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
+  '/reports/balance-sheet': typeof AuthenticatedReportsBalanceSheetRoute
   '/reports/cash-flow': typeof AuthenticatedReportsCashFlowRoute
+  '/reports/ledger': typeof AuthenticatedReportsLedgerRoute
   '/reports/profit-loss': typeof AuthenticatedReportsProfitLossRoute
   '/reports/sales': typeof AuthenticatedReportsSalesRoute
   '/reports/tax': typeof AuthenticatedReportsTaxRoute
+  '/reports/trial-balance': typeof AuthenticatedReportsTrialBalanceRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
+  '/settings/collections': typeof AuthenticatedSettingsCollectionsRoute
+  '/settings/document-templates': typeof AuthenticatedSettingsDocumentTemplatesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/api/collections/dashboard': typeof ApiCollectionsDashboardRoute
+  '/api/communications/batch-preview': typeof ApiCommunicationsBatchPreviewRoute
+  '/api/communications/batch-send': typeof ApiCommunicationsBatchSendRoute
+  '/api/communications/process-queue': typeof ApiCommunicationsProcessQueueRoute
+  '/api/communications/retry': typeof ApiCommunicationsRetryRoute
+  '/api/communications/run-scheduled': typeof ApiCommunicationsRunScheduledRoute
+  '/api/communications/send': typeof ApiCommunicationsSendRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/api/communications/webhooks/resend': typeof ApiCommunicationsWebhooksResendRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
   '/api/documents/credit-note/$id': typeof ApiDocumentsCreditNoteIdRoute
+  '/api/documents/customer-statement/$customerId': typeof ApiDocumentsCustomerStatementCustomerIdRoute
   '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
   '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
@@ -347,8 +480,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/bills': typeof AuthenticatedBillsRoute
+  '/bills': typeof AuthenticatedBillsRouteWithChildren
   '/cash-sessions': typeof AuthenticatedCashSessionsRoute
+  '/collections': typeof AuthenticatedCollectionsRoute
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inventory': typeof AuthenticatedInventoryRouteWithChildren
@@ -362,27 +496,43 @@ export interface FileRoutesByTo {
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
+  '/accounting/controls': typeof AuthenticatedAccountingControlsRoute
+  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
+  '/reports/balance-sheet': typeof AuthenticatedReportsBalanceSheetRoute
   '/reports/cash-flow': typeof AuthenticatedReportsCashFlowRoute
+  '/reports/ledger': typeof AuthenticatedReportsLedgerRoute
   '/reports/profit-loss': typeof AuthenticatedReportsProfitLossRoute
   '/reports/sales': typeof AuthenticatedReportsSalesRoute
   '/reports/tax': typeof AuthenticatedReportsTaxRoute
+  '/reports/trial-balance': typeof AuthenticatedReportsTrialBalanceRoute
   '/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/settings/branches': typeof AuthenticatedSettingsBranchesRoute
+  '/settings/collections': typeof AuthenticatedSettingsCollectionsRoute
+  '/settings/document-templates': typeof AuthenticatedSettingsDocumentTemplatesRoute
   '/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/api/collections/dashboard': typeof ApiCollectionsDashboardRoute
+  '/api/communications/batch-preview': typeof ApiCommunicationsBatchPreviewRoute
+  '/api/communications/batch-send': typeof ApiCommunicationsBatchSendRoute
+  '/api/communications/process-queue': typeof ApiCommunicationsProcessQueueRoute
+  '/api/communications/retry': typeof ApiCommunicationsRetryRoute
+  '/api/communications/run-scheduled': typeof ApiCommunicationsRunScheduledRoute
+  '/api/communications/send': typeof ApiCommunicationsSendRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/api/communications/webhooks/resend': typeof ApiCommunicationsWebhooksResendRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
   '/api/documents/credit-note/$id': typeof ApiDocumentsCreditNoteIdRoute
+  '/api/documents/customer-statement/$customerId': typeof ApiDocumentsCustomerStatementCustomerIdRoute
   '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
   '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
@@ -393,8 +543,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_authenticated/bills': typeof AuthenticatedBillsRoute
+  '/_authenticated/bills': typeof AuthenticatedBillsRouteWithChildren
   '/_authenticated/cash-sessions': typeof AuthenticatedCashSessionsRoute
+  '/_authenticated/collections': typeof AuthenticatedCollectionsRoute
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRouteWithChildren
@@ -409,27 +560,43 @@ export interface FileRoutesById {
   '/_authenticated/store': typeof AuthenticatedStoreRouteWithChildren
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
+  '/_authenticated/accounting/controls': typeof AuthenticatedAccountingControlsRoute
+  '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/inventory/$productId': typeof AuthenticatedInventoryProductIdRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
   '/_authenticated/pos-orders/$orderId': typeof AuthenticatedPosOrdersOrderIdRoute
   '/_authenticated/quick-expenses/$expenseId': typeof AuthenticatedQuickExpensesExpenseIdRoute
   '/_authenticated/refunds/$creditNoteId': typeof AuthenticatedRefundsCreditNoteIdRoute
+  '/_authenticated/reports/balance-sheet': typeof AuthenticatedReportsBalanceSheetRoute
   '/_authenticated/reports/cash-flow': typeof AuthenticatedReportsCashFlowRoute
+  '/_authenticated/reports/ledger': typeof AuthenticatedReportsLedgerRoute
   '/_authenticated/reports/profit-loss': typeof AuthenticatedReportsProfitLossRoute
   '/_authenticated/reports/sales': typeof AuthenticatedReportsSalesRoute
   '/_authenticated/reports/tax': typeof AuthenticatedReportsTaxRoute
+  '/_authenticated/reports/trial-balance': typeof AuthenticatedReportsTrialBalanceRoute
   '/_authenticated/sales/$orderId': typeof AuthenticatedSalesOrderIdRoute
   '/_authenticated/settings/branches': typeof AuthenticatedSettingsBranchesRoute
+  '/_authenticated/settings/collections': typeof AuthenticatedSettingsCollectionsRoute
+  '/_authenticated/settings/document-templates': typeof AuthenticatedSettingsDocumentTemplatesRoute
   '/_authenticated/settings/modules': typeof AuthenticatedSettingsModulesRoute
   '/_authenticated/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/api/collections/dashboard': typeof ApiCollectionsDashboardRoute
+  '/api/communications/batch-preview': typeof ApiCommunicationsBatchPreviewRoute
+  '/api/communications/batch-send': typeof ApiCommunicationsBatchSendRoute
+  '/api/communications/process-queue': typeof ApiCommunicationsProcessQueueRoute
+  '/api/communications/retry': typeof ApiCommunicationsRetryRoute
+  '/api/communications/run-scheduled': typeof ApiCommunicationsRunScheduledRoute
+  '/api/communications/send': typeof ApiCommunicationsSendRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/api/communications/webhooks/resend': typeof ApiCommunicationsWebhooksResendRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
   '/api/documents/credit-note/$id': typeof ApiDocumentsCreditNoteIdRoute
+  '/api/documents/customer-statement/$customerId': typeof ApiDocumentsCustomerStatementCustomerIdRoute
   '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
   '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
@@ -442,6 +609,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/bills'
     | '/cash-sessions'
+    | '/collections'
     | '/customers'
     | '/dashboard'
     | '/inventory'
@@ -456,27 +624,43 @@ export interface FileRouteTypes {
     | '/store'
     | '/suppliers'
     | '/accounting/coa'
+    | '/accounting/controls'
+    | '/bills/$billId'
     | '/customers/$customerId'
     | '/inventory/$productId'
     | '/invoices/$invoiceId'
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
     | '/refunds/$creditNoteId'
+    | '/reports/balance-sheet'
     | '/reports/cash-flow'
+    | '/reports/ledger'
     | '/reports/profit-loss'
     | '/reports/sales'
     | '/reports/tax'
+    | '/reports/trial-balance'
     | '/sales/$orderId'
     | '/settings/branches'
+    | '/settings/collections'
+    | '/settings/document-templates'
     | '/settings/modules'
     | '/settings/tax-rates'
     | '/settings/users'
     | '/store/$orderId'
+    | '/api/collections/dashboard'
+    | '/api/communications/batch-preview'
+    | '/api/communications/batch-send'
+    | '/api/communications/process-queue'
+    | '/api/communications/retry'
+    | '/api/communications/run-scheduled'
+    | '/api/communications/send'
     | '/reports/'
     | '/settings/'
+    | '/api/communications/webhooks/resend'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
     | '/api/documents/credit-note/$id'
+    | '/api/documents/customer-statement/$customerId'
     | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
     | '/api/documents/quick-expense/$id'
@@ -487,6 +671,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/bills'
     | '/cash-sessions'
+    | '/collections'
     | '/customers'
     | '/dashboard'
     | '/inventory'
@@ -500,27 +685,43 @@ export interface FileRouteTypes {
     | '/store'
     | '/suppliers'
     | '/accounting/coa'
+    | '/accounting/controls'
+    | '/bills/$billId'
     | '/customers/$customerId'
     | '/inventory/$productId'
     | '/invoices/$invoiceId'
     | '/pos-orders/$orderId'
     | '/quick-expenses/$expenseId'
     | '/refunds/$creditNoteId'
+    | '/reports/balance-sheet'
     | '/reports/cash-flow'
+    | '/reports/ledger'
     | '/reports/profit-loss'
     | '/reports/sales'
     | '/reports/tax'
+    | '/reports/trial-balance'
     | '/sales/$orderId'
     | '/settings/branches'
+    | '/settings/collections'
+    | '/settings/document-templates'
     | '/settings/modules'
     | '/settings/tax-rates'
     | '/settings/users'
     | '/store/$orderId'
+    | '/api/collections/dashboard'
+    | '/api/communications/batch-preview'
+    | '/api/communications/batch-send'
+    | '/api/communications/process-queue'
+    | '/api/communications/retry'
+    | '/api/communications/run-scheduled'
+    | '/api/communications/send'
     | '/reports'
     | '/settings'
+    | '/api/communications/webhooks/resend'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
     | '/api/documents/credit-note/$id'
+    | '/api/documents/customer-statement/$customerId'
     | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
     | '/api/documents/quick-expense/$id'
@@ -532,6 +733,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/bills'
     | '/_authenticated/cash-sessions'
+    | '/_authenticated/collections'
     | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/inventory'
@@ -546,27 +748,43 @@ export interface FileRouteTypes {
     | '/_authenticated/store'
     | '/_authenticated/suppliers'
     | '/_authenticated/accounting/coa'
+    | '/_authenticated/accounting/controls'
+    | '/_authenticated/bills/$billId'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/inventory/$productId'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/pos-orders/$orderId'
     | '/_authenticated/quick-expenses/$expenseId'
     | '/_authenticated/refunds/$creditNoteId'
+    | '/_authenticated/reports/balance-sheet'
     | '/_authenticated/reports/cash-flow'
+    | '/_authenticated/reports/ledger'
     | '/_authenticated/reports/profit-loss'
     | '/_authenticated/reports/sales'
     | '/_authenticated/reports/tax'
+    | '/_authenticated/reports/trial-balance'
     | '/_authenticated/sales/$orderId'
     | '/_authenticated/settings/branches'
+    | '/_authenticated/settings/collections'
+    | '/_authenticated/settings/document-templates'
     | '/_authenticated/settings/modules'
     | '/_authenticated/settings/tax-rates'
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
+    | '/api/collections/dashboard'
+    | '/api/communications/batch-preview'
+    | '/api/communications/batch-send'
+    | '/api/communications/process-queue'
+    | '/api/communications/retry'
+    | '/api/communications/run-scheduled'
+    | '/api/communications/send'
     | '/_authenticated/reports/'
     | '/_authenticated/settings/'
+    | '/api/communications/webhooks/resend'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
     | '/api/documents/credit-note/$id'
+    | '/api/documents/customer-statement/$customerId'
     | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
     | '/api/documents/quick-expense/$id'
@@ -577,9 +795,18 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiCollectionsDashboardRoute: typeof ApiCollectionsDashboardRoute
+  ApiCommunicationsBatchPreviewRoute: typeof ApiCommunicationsBatchPreviewRoute
+  ApiCommunicationsBatchSendRoute: typeof ApiCommunicationsBatchSendRoute
+  ApiCommunicationsProcessQueueRoute: typeof ApiCommunicationsProcessQueueRoute
+  ApiCommunicationsRetryRoute: typeof ApiCommunicationsRetryRoute
+  ApiCommunicationsRunScheduledRoute: typeof ApiCommunicationsRunScheduledRoute
+  ApiCommunicationsSendRoute: typeof ApiCommunicationsSendRoute
+  ApiCommunicationsWebhooksResendRoute: typeof ApiCommunicationsWebhooksResendRoute
   ApiDocumentsBillIdRoute: typeof ApiDocumentsBillIdRoute
   ApiDocumentsCashSessionIdRoute: typeof ApiDocumentsCashSessionIdRoute
   ApiDocumentsCreditNoteIdRoute: typeof ApiDocumentsCreditNoteIdRoute
+  ApiDocumentsCustomerStatementCustomerIdRoute: typeof ApiDocumentsCustomerStatementCustomerIdRoute
   ApiDocumentsInvoiceIdRoute: typeof ApiDocumentsInvoiceIdRoute
   ApiDocumentsPosReceiptIdRoute: typeof ApiDocumentsPosReceiptIdRoute
   ApiDocumentsQuickExpenseIdRoute: typeof ApiDocumentsQuickExpenseIdRoute
@@ -706,6 +933,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/collections': {
+      id: '/_authenticated/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof AuthenticatedCollectionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cash-sessions': {
       id: '/_authenticated/cash-sessions'
       path: '/cash-sessions'
@@ -733,6 +967,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/reports/'
       preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/communications/send': {
+      id: '/api/communications/send'
+      path: '/api/communications/send'
+      fullPath: '/api/communications/send'
+      preLoaderRoute: typeof ApiCommunicationsSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/communications/run-scheduled': {
+      id: '/api/communications/run-scheduled'
+      path: '/api/communications/run-scheduled'
+      fullPath: '/api/communications/run-scheduled'
+      preLoaderRoute: typeof ApiCommunicationsRunScheduledRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/communications/retry': {
+      id: '/api/communications/retry'
+      path: '/api/communications/retry'
+      fullPath: '/api/communications/retry'
+      preLoaderRoute: typeof ApiCommunicationsRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/communications/process-queue': {
+      id: '/api/communications/process-queue'
+      path: '/api/communications/process-queue'
+      fullPath: '/api/communications/process-queue'
+      preLoaderRoute: typeof ApiCommunicationsProcessQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/communications/batch-send': {
+      id: '/api/communications/batch-send'
+      path: '/api/communications/batch-send'
+      fullPath: '/api/communications/batch-send'
+      preLoaderRoute: typeof ApiCommunicationsBatchSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/communications/batch-preview': {
+      id: '/api/communications/batch-preview'
+      path: '/api/communications/batch-preview'
+      fullPath: '/api/communications/batch-preview'
+      preLoaderRoute: typeof ApiCommunicationsBatchPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/collections/dashboard': {
+      id: '/api/collections/dashboard'
+      path: '/api/collections/dashboard'
+      fullPath: '/api/collections/dashboard'
+      preLoaderRoute: typeof ApiCollectionsDashboardRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/store/$orderId': {
       id: '/_authenticated/store/$orderId'
@@ -762,6 +1045,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsModulesRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/settings/document-templates': {
+      id: '/_authenticated/settings/document-templates'
+      path: '/document-templates'
+      fullPath: '/settings/document-templates'
+      preLoaderRoute: typeof AuthenticatedSettingsDocumentTemplatesRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/collections': {
+      id: '/_authenticated/settings/collections'
+      path: '/collections'
+      fullPath: '/settings/collections'
+      preLoaderRoute: typeof AuthenticatedSettingsCollectionsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/settings/branches': {
       id: '/_authenticated/settings/branches'
       path: '/branches'
@@ -775,6 +1072,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sales/$orderId'
       preLoaderRoute: typeof AuthenticatedSalesOrderIdRouteImport
       parentRoute: typeof AuthenticatedSalesRoute
+    }
+    '/_authenticated/reports/trial-balance': {
+      id: '/_authenticated/reports/trial-balance'
+      path: '/reports/trial-balance'
+      fullPath: '/reports/trial-balance'
+      preLoaderRoute: typeof AuthenticatedReportsTrialBalanceRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/reports/tax': {
       id: '/_authenticated/reports/tax'
@@ -797,11 +1101,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsProfitLossRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/reports/ledger': {
+      id: '/_authenticated/reports/ledger'
+      path: '/reports/ledger'
+      fullPath: '/reports/ledger'
+      preLoaderRoute: typeof AuthenticatedReportsLedgerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/reports/cash-flow': {
       id: '/_authenticated/reports/cash-flow'
       path: '/reports/cash-flow'
       fullPath: '/reports/cash-flow'
       preLoaderRoute: typeof AuthenticatedReportsCashFlowRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/balance-sheet': {
+      id: '/_authenticated/reports/balance-sheet'
+      path: '/reports/balance-sheet'
+      fullPath: '/reports/balance-sheet'
+      preLoaderRoute: typeof AuthenticatedReportsBalanceSheetRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/refunds/$creditNoteId': {
@@ -846,6 +1164,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedCustomersRoute
     }
+    '/_authenticated/bills/$billId': {
+      id: '/_authenticated/bills/$billId'
+      path: '/$billId'
+      fullPath: '/bills/$billId'
+      preLoaderRoute: typeof AuthenticatedBillsBillIdRouteImport
+      parentRoute: typeof AuthenticatedBillsRoute
+    }
+    '/_authenticated/accounting/controls': {
+      id: '/_authenticated/accounting/controls'
+      path: '/accounting/controls'
+      fullPath: '/accounting/controls'
+      preLoaderRoute: typeof AuthenticatedAccountingControlsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/accounting/coa': {
       id: '/_authenticated/accounting/coa'
       path: '/accounting/coa'
@@ -874,6 +1206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDocumentsInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/documents/customer-statement/$customerId': {
+      id: '/api/documents/customer-statement/$customerId'
+      path: '/api/documents/customer-statement/$customerId'
+      fullPath: '/api/documents/customer-statement/$customerId'
+      preLoaderRoute: typeof ApiDocumentsCustomerStatementCustomerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/documents/credit-note/$id': {
       id: '/api/documents/credit-note/$id'
       path: '/api/documents/credit-note/$id'
@@ -895,8 +1234,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDocumentsBillIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/communications/webhooks/resend': {
+      id: '/api/communications/webhooks/resend'
+      path: '/api/communications/webhooks/resend'
+      fullPath: '/api/communications/webhooks/resend'
+      preLoaderRoute: typeof ApiCommunicationsWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface AuthenticatedBillsRouteChildren {
+  AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
+}
+
+const AuthenticatedBillsRouteChildren: AuthenticatedBillsRouteChildren = {
+  AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
+}
+
+const AuthenticatedBillsRouteWithChildren =
+  AuthenticatedBillsRoute._addFileChildren(AuthenticatedBillsRouteChildren)
 
 interface AuthenticatedCustomersRouteChildren {
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
@@ -993,6 +1350,8 @@ const AuthenticatedSalesRouteWithChildren =
 
 interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsBranchesRoute: typeof AuthenticatedSettingsBranchesRoute
+  AuthenticatedSettingsCollectionsRoute: typeof AuthenticatedSettingsCollectionsRoute
+  AuthenticatedSettingsDocumentTemplatesRoute: typeof AuthenticatedSettingsDocumentTemplatesRoute
   AuthenticatedSettingsModulesRoute: typeof AuthenticatedSettingsModulesRoute
   AuthenticatedSettingsTaxRatesRoute: typeof AuthenticatedSettingsTaxRatesRoute
   AuthenticatedSettingsUsersRoute: typeof AuthenticatedSettingsUsersRoute
@@ -1001,6 +1360,9 @@ interface AuthenticatedSettingsRouteChildren {
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
   AuthenticatedSettingsBranchesRoute: AuthenticatedSettingsBranchesRoute,
+  AuthenticatedSettingsCollectionsRoute: AuthenticatedSettingsCollectionsRoute,
+  AuthenticatedSettingsDocumentTemplatesRoute:
+    AuthenticatedSettingsDocumentTemplatesRoute,
   AuthenticatedSettingsModulesRoute: AuthenticatedSettingsModulesRoute,
   AuthenticatedSettingsTaxRatesRoute: AuthenticatedSettingsTaxRatesRoute,
   AuthenticatedSettingsUsersRoute: AuthenticatedSettingsUsersRoute,
@@ -1024,8 +1386,9 @@ const AuthenticatedStoreRouteWithChildren =
   AuthenticatedStoreRoute._addFileChildren(AuthenticatedStoreRouteChildren)
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedBillsRoute: typeof AuthenticatedBillsRoute
+  AuthenticatedBillsRoute: typeof AuthenticatedBillsRouteWithChildren
   AuthenticatedCashSessionsRoute: typeof AuthenticatedCashSessionsRoute
+  AuthenticatedCollectionsRoute: typeof AuthenticatedCollectionsRoute
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRouteWithChildren
@@ -1040,16 +1403,21 @@ interface AuthenticatedRouteChildren {
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRouteWithChildren
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
   AuthenticatedAccountingCoaRoute: typeof AuthenticatedAccountingCoaRoute
+  AuthenticatedAccountingControlsRoute: typeof AuthenticatedAccountingControlsRoute
+  AuthenticatedReportsBalanceSheetRoute: typeof AuthenticatedReportsBalanceSheetRoute
   AuthenticatedReportsCashFlowRoute: typeof AuthenticatedReportsCashFlowRoute
+  AuthenticatedReportsLedgerRoute: typeof AuthenticatedReportsLedgerRoute
   AuthenticatedReportsProfitLossRoute: typeof AuthenticatedReportsProfitLossRoute
   AuthenticatedReportsSalesRoute: typeof AuthenticatedReportsSalesRoute
   AuthenticatedReportsTaxRoute: typeof AuthenticatedReportsTaxRoute
+  AuthenticatedReportsTrialBalanceRoute: typeof AuthenticatedReportsTrialBalanceRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedBillsRoute: AuthenticatedBillsRoute,
+  AuthenticatedBillsRoute: AuthenticatedBillsRouteWithChildren,
   AuthenticatedCashSessionsRoute: AuthenticatedCashSessionsRoute,
+  AuthenticatedCollectionsRoute: AuthenticatedCollectionsRoute,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRouteWithChildren,
@@ -1064,10 +1432,14 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedStoreRoute: AuthenticatedStoreRouteWithChildren,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
   AuthenticatedAccountingCoaRoute: AuthenticatedAccountingCoaRoute,
+  AuthenticatedAccountingControlsRoute: AuthenticatedAccountingControlsRoute,
+  AuthenticatedReportsBalanceSheetRoute: AuthenticatedReportsBalanceSheetRoute,
   AuthenticatedReportsCashFlowRoute: AuthenticatedReportsCashFlowRoute,
+  AuthenticatedReportsLedgerRoute: AuthenticatedReportsLedgerRoute,
   AuthenticatedReportsProfitLossRoute: AuthenticatedReportsProfitLossRoute,
   AuthenticatedReportsSalesRoute: AuthenticatedReportsSalesRoute,
   AuthenticatedReportsTaxRoute: AuthenticatedReportsTaxRoute,
+  AuthenticatedReportsTrialBalanceRoute: AuthenticatedReportsTrialBalanceRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
 }
 
@@ -1080,9 +1452,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiCollectionsDashboardRoute: ApiCollectionsDashboardRoute,
+  ApiCommunicationsBatchPreviewRoute: ApiCommunicationsBatchPreviewRoute,
+  ApiCommunicationsBatchSendRoute: ApiCommunicationsBatchSendRoute,
+  ApiCommunicationsProcessQueueRoute: ApiCommunicationsProcessQueueRoute,
+  ApiCommunicationsRetryRoute: ApiCommunicationsRetryRoute,
+  ApiCommunicationsRunScheduledRoute: ApiCommunicationsRunScheduledRoute,
+  ApiCommunicationsSendRoute: ApiCommunicationsSendRoute,
+  ApiCommunicationsWebhooksResendRoute: ApiCommunicationsWebhooksResendRoute,
   ApiDocumentsBillIdRoute: ApiDocumentsBillIdRoute,
   ApiDocumentsCashSessionIdRoute: ApiDocumentsCashSessionIdRoute,
   ApiDocumentsCreditNoteIdRoute: ApiDocumentsCreditNoteIdRoute,
+  ApiDocumentsCustomerStatementCustomerIdRoute:
+    ApiDocumentsCustomerStatementCustomerIdRoute,
   ApiDocumentsInvoiceIdRoute: ApiDocumentsInvoiceIdRoute,
   ApiDocumentsPosReceiptIdRoute: ApiDocumentsPosReceiptIdRoute,
   ApiDocumentsQuickExpenseIdRoute: ApiDocumentsQuickExpenseIdRoute,
@@ -1090,3 +1472,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

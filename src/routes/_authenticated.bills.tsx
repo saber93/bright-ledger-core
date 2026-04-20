@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useBills } from "@/features/bills/hooks";
 import { useAuth } from "@/lib/auth";
 import { PageHeader } from "@/components/data/PageHeader";
@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Receipt, Plus } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import { openDocument } from "@/lib/open-document";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,8 +18,10 @@ export const Route = createFileRoute("/_authenticated/bills")({
 });
 
 function BillsPage() {
+  const location = useLocation();
   const { data, isLoading } = useBills();
   const { company } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const filtered = (data ?? []).filter(
     (b) =>
@@ -29,6 +30,10 @@ function BillsPage() {
   );
   const totalSum = filtered.reduce((s, b) => s + Number(b.total), 0);
   const currency = company?.currency ?? "USD";
+
+  if (/^\/bills\/[^/]+$/.test(location.pathname)) {
+    return <Outlet />;
+  }
 
   return (
     <div>
@@ -55,9 +60,7 @@ function BillsPage() {
       <DataTable
         loading={isLoading}
         data={filtered}
-        onRowClick={(r) =>
-          void openDocument(`/api/documents/bill/${r.id}`)
-        }
+        onRowClick={(row) => void navigate({ to: "/bills/$billId", params: { billId: row.id } })}
         emptyState={
           <EmptyState
             icon={<Receipt className="h-5 w-5" />}

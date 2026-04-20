@@ -36,6 +36,8 @@ import {
   Banknote,
   Receipt as ReceiptIcon,
   Undo2,
+  ShieldAlert,
+  BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanySettings } from "@/features/settings/hooks";
@@ -119,6 +121,8 @@ const accountingGroup: NavItemDef[] = [
   { label: "Payments", href: "/payments", icon: CreditCard },
   { label: "Quick Expenses", href: "/quick-expenses", icon: ReceiptIcon, flag: "quick_expenses_enabled" },
   { label: "Suppliers", href: "/suppliers", icon: Truck },
+  { label: "Collections", href: "/collections", icon: BellRing },
+  { label: "Accounting Controls", href: "/accounting/controls", icon: ShieldAlert },
   { label: "Chart of Accounts", href: "/accounting/coa", icon: BookOpen },
 ];
 

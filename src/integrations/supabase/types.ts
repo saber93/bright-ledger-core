@@ -497,6 +497,8 @@ export type Database = {
       company_settings: {
         Row: {
           accounting_enabled: boolean
+          accounting_lock_date: string | null
+          accounting_lock_reason: string | null
           bill_prefix: string
           cash_sessions_enabled: boolean
           company_id: string
@@ -517,6 +519,8 @@ export type Database = {
         }
         Insert: {
           accounting_enabled?: boolean
+          accounting_lock_date?: string | null
+          accounting_lock_reason?: string | null
           bill_prefix?: string
           cash_sessions_enabled?: boolean
           company_id: string
@@ -537,6 +541,8 @@ export type Database = {
         }
         Update: {
           accounting_enabled?: boolean
+          accounting_lock_date?: string | null
+          accounting_lock_reason?: string | null
           bill_prefix?: string
           cash_sessions_enabled?: boolean
           company_id?: string

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { useInvoices } from "@/features/invoices/hooks";
 import { useAuth } from "@/lib/auth";
 import { PageHeader } from "@/components/data/PageHeader";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/invoices")({
 });
 
 function InvoicesPage() {
+  const location = useLocation();
   const { data, isLoading } = useInvoices();
   const { company } = useAuth();
   const [search, setSearch] = useState("");
@@ -28,6 +29,10 @@ function InvoicesPage() {
   );
   const totalSum = filtered.reduce((s, i) => s + Number(i.total), 0);
   const currency = company?.currency ?? "USD";
+
+  if (/^\/invoices\/[^/]+$/.test(location.pathname)) {
+    return <Outlet />;
+  }
 
   return (
     <div>

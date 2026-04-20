@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requireDocumentAccess } from "./api.documents.shared";
+import { requireDocumentAccess } from "./-api.documents.shared";
 
 export const Route = createFileRoute("/api/documents/pos-receipt/$id")({
   server: {
@@ -16,7 +16,10 @@ export const Route = createFileRoute("/api/documents/pos-receipt/$id")({
           return new Response("Not found", { status: 404 });
         }
 
-        const guard = await requireDocumentAccess(request, order.company_id);
+        const guard = await requireDocumentAccess(request, order.company_id, {
+          documentType: "pos_receipt",
+          documentId: order.id,
+        });
         if (!guard.ok) return guard.response;
 
         const { data: company } = await supabaseAdmin

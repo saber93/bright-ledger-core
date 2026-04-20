@@ -71,7 +71,7 @@ function TaxReportPage() {
         }
       />
 
-      <ReportFilterBar value={filters} onChange={setFilters} showBranch={false} />
+      <ReportFilterBar value={filters} onChange={setFilters} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard

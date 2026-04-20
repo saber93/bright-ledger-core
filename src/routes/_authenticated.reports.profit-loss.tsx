@@ -56,7 +56,7 @@ function ProfitLossPage() {
     <div>
       <PageHeader
         title="Profit & Loss"
-        description="Revenue minus expenses for the selected period."
+        description="Posted income minus posted expenses for the selected period."
         breadcrumbs={
           <Link to="/reports" className="inline-flex items-center gap-1 hover:text-foreground">
             <ArrowLeft className="h-3 w-3" /> Reports
@@ -80,7 +80,7 @@ function ProfitLossPage() {
         <MetricCard
           label="Gross Revenue"
           value={<MoneyDisplay value={data?.grossRevenue ?? 0} currency={currency} />}
-          hint="Invoices + POS"
+          hint="Posted income excluding tax"
           icon={<TrendingUp className="h-5 w-5" />}
           accent="success"
         />
@@ -94,7 +94,7 @@ function ProfitLossPage() {
         <MetricCard
           label="Total Expenses"
           value={<MoneyDisplay value={data?.totalExpenses ?? 0} currency={currency} />}
-          hint="Bills + quick expenses"
+          hint="Bills, quick expenses, and COGS"
           icon={<TrendingDown className="h-5 w-5" />}
           accent="danger"
         />
@@ -106,6 +106,11 @@ function ProfitLossPage() {
           accent={(data?.netProfit ?? 0) >= 0 ? "primary" : "danger"}
         />
       </div>
+
+      <section className="mt-4 rounded-xl border border-info/30 bg-info/5 px-5 py-4 text-sm text-muted-foreground">
+        This statement now reconciles from posted ledger activity. Revenue and expenses are
+        shown net of tax, and POS cost of goods sold is included.
+      </section>
 
       <section className="mt-6 rounded-xl border bg-card">
         <div className="border-b px-5 py-3.5">

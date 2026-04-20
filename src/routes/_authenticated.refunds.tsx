@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Undo2, Plus, Filter } from "lucide-react";
 import { PageHeader } from "@/components/data/PageHeader";
@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/refunds")({
 });
 
 function RefundsPage() {
+  const location = useLocation();
   const { data: settings } = useCompanySettings();
   const { company } = useAuth();
   const currency = company?.currency ?? "USD";
@@ -63,6 +64,10 @@ function RefundsPage() {
       totalAllocated,
     };
   }, [filtered]);
+
+  if (/^\/refunds\/[^/]+$/.test(location.pathname)) {
+    return <Outlet />;
+  }
 
   if (settings && !settings.refunds_enabled) {
     return (

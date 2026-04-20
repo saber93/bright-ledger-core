@@ -15,7 +15,8 @@ import {
   type CartLineInput,
   type PosPaymentMethod,
 } from "@/features/pos/hooks";
-import { useAuth, useHasRole } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
+import { useFinancePermissions } from "@/features/accounting/permissions";
 import { openDocument } from "@/lib/open-document";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,8 +96,10 @@ function PosTerminal() {
   const { data: taxRates = [] } = useTaxRates();
   const navigate = useNavigate();
 
-  const isOwnerOrAccountant = useHasRole(["owner", "accountant"]);
-  const allowOverride = !!settings?.pos_allow_price_override || isOwnerOrAccountant;
+  const finance = useFinancePermissions();
+  const allowOverride =
+    (Boolean(settings?.pos_allow_price_override) && finance.canOverridePosPrice) ||
+    finance.canBypassPosOverrideSetting;
 
   // ---- Context state ----
   const [branchId, setBranchId] = useState<string | undefined>();
@@ -548,11 +551,13 @@ function PosTerminal() {
                         value={l.unit_price}
                         onChange={(e) => {
                           const v = Number(e.target.value || 0);
-                          if (
-                            v !== l.list_price &&
-                            !allowOverride &&
-                            !l.price_override_reason
-                          ) {
+                          if (v !== l.list_price && !allowOverride) {
+                            toast.error(
+                              "POS price overrides require finance permission and may be disabled in Settings.",
+                            );
+                            return;
+                          }
+                          if (v !== l.list_price && !l.price_override_reason) {
                             setOverrideTarget(l);
                             return;
                           }

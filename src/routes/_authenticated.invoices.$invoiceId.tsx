@@ -1,39 +1,52 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { ArrowLeft, FileText, Printer, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Printer, Plus, Loader2, Mail, BellRing } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
 import { RefundsHistory } from "@/components/refunds/RefundsHistory";
 import { RecordPaymentDialog } from "@/components/invoices/RecordPaymentDialog";
 import { useInvoice } from "@/features/invoices/hooks";
+import { usePostingAudit } from "@/features/accounting/ledger";
+import { useFinancePermissions } from "@/features/accounting/permissions";
+import { useReversePayment, useVoidInvoice } from "@/features/accounting/controls";
+import { DocumentCommunicationCard } from "@/components/delivery/DocumentCommunicationCard";
+import { SendDocumentDialog } from "@/components/delivery/SendDocumentDialog";
+import type { DocumentDelivery } from "@/features/delivery/hooks";
 import { useAuth } from "@/lib/auth";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
 import { openDocument } from "@/lib/open-document";
+import { PostingAuditCard } from "@/components/accounting/PostingAuditCard";
+import { FinanceReasonDialog } from "@/components/accounting/FinanceReasonDialog";
+
+function InvoiceErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+
+  return (
+    <div className="p-6">
+      <p className="text-sm text-destructive">Error: {error.message}</p>
+      <Button
+        size="sm"
+        className="mt-2"
+        onClick={() => {
+          router.invalidate();
+          reset();
+        }}
+      >
+        Retry
+      </Button>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceDetailPage,
-  errorComponent: ({ error, reset }) => {
-    const router = useRouter();
-    return (
-      <div className="p-6">
-        <p className="text-sm text-destructive">Error: {error.message}</p>
-        <Button
-          size="sm"
-          className="mt-2"
-          onClick={() => {
-            router.invalidate();
-            reset();
-          }}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  },
+  errorComponent: InvoiceErrorComponent,
 });
 
 interface InvoiceDetailData {
@@ -50,6 +63,7 @@ interface InvoiceDetailData {
     amount_paid: number;
     notes: string | null;
     created_at: string;
+    cancellation_reason: string | null;
     customers: { id: string; name: string; email: string | null } | null;
   };
   lines: Array<{
@@ -67,14 +81,34 @@ interface InvoiceDetailData {
     paid_at: string;
     reference: string | null;
     direction: string;
+    status: string;
+    cancellation_reason: string | null;
   }>;
 }
 
 function InvoiceDetailPage() {
   const { invoiceId } = Route.useParams();
   const { data, isLoading } = useInvoice(invoiceId);
+  const postingAudit = usePostingAudit({
+    documentType: "invoice",
+    documentIds: data ? [(data as InvoiceDetailData).invoice.id] : [],
+  });
   const { company } = useAuth();
+  const finance = useFinancePermissions();
   const [payOpen, setPayOpen] = useState(false);
+  const [voidOpen, setVoidOpen] = useState(false);
+  const [reversePaymentId, setReversePaymentId] = useState<string | null>(null);
+  const [sendOpen, setSendOpen] = useState(false);
+  const [reminderOpen, setReminderOpen] = useState(false);
+  const [deliverySeed, setDeliverySeed] = useState<{
+    recipient?: string | null;
+    recipientName?: string | null;
+    subject?: string | null;
+    message?: string | null;
+    templateKey?: "invoice_email" | "reminder_friendly" | "reminder_overdue" | "reminder_final";
+  } | null>(null);
+  const voidInvoice = useVoidInvoice();
+  const reversePayment = useReversePayment();
 
   if (isLoading) {
     return (
@@ -98,6 +132,42 @@ function InvoiceDetailPage() {
   const currency = invoice.currency || company?.currency || "USD";
   const remaining = Math.max(0, Number(invoice.total) - Number(invoice.amount_paid));
   const fullyPaid = remaining <= 0.0001;
+  const isOverdue = invoice.status === "overdue" && remaining > 0.0001;
+
+  function openSend(seed?: DocumentDelivery) {
+    setDeliverySeed(
+      seed
+        ? {
+            recipient: seed.recipient,
+            recipientName: seed.recipient_name,
+            subject: seed.subject,
+            message: seed.message,
+            templateKey: seed.template_key === "invoice_email" ? "invoice_email" : "invoice_email",
+          }
+        : null,
+    );
+    setSendOpen(true);
+  }
+
+  function openReminder(seed?: DocumentDelivery) {
+    setDeliverySeed(
+      seed
+        ? {
+            recipient: seed.recipient,
+            recipientName: seed.recipient_name,
+            subject: seed.subject,
+            message: seed.message,
+            templateKey:
+              seed.template_key === "reminder_friendly" ||
+              seed.template_key === "reminder_overdue" ||
+              seed.template_key === "reminder_final"
+                ? seed.template_key
+                : "reminder_overdue",
+          }
+        : null,
+    );
+    setReminderOpen(true);
+  }
 
   return (
     <div className="space-y-4">
@@ -127,14 +197,49 @@ function InvoiceDetailPage() {
             >
               <Printer className="mr-1 h-4 w-4" /> Print / PDF
             </Button>
-            {!fullyPaid && invoice.status !== "cancelled" && invoice.customers && (
+            {finance.canSendCustomerDocuments && (
+              <Button variant="outline" onClick={() => openSend()}>
+                <Mail className="mr-1 h-4 w-4" /> Send invoice
+              </Button>
+            )}
+            {finance.canManageCollections && !fullyPaid && (
+              <Button variant="outline" onClick={() => openReminder()}>
+                <BellRing className="mr-1 h-4 w-4" /> Send reminder
+              </Button>
+            )}
+            {!fullyPaid &&
+              invoice.status !== "cancelled" &&
+              invoice.customers &&
+              finance.canRecordCustomerPayments && (
               <Button onClick={() => setPayOpen(true)}>
                 <Plus className="mr-1 h-4 w-4" /> Record payment
+              </Button>
+            )}
+            {invoice.status !== "cancelled" && finance.canReversePostedDocuments && (
+              <Button variant="outline" onClick={() => setVoidOpen(true)}>
+                Void invoice
               </Button>
             )}
           </div>
         }
       />
+
+      {isOverdue && (
+        <Alert>
+          <BellRing className="h-4 w-4" />
+          <AlertTitle>Invoice is overdue</AlertTitle>
+          <AlertDescription>
+            This invoice still has an open balance of {formatMoney(remaining, currency)}
+            {invoice.due_date ? ` and was due on ${formatDate(invoice.due_date)}.` : "."}
+            {finance.canManageCollections && (
+              <span className="block pt-2 text-xs text-muted-foreground">
+                Use “Send reminder” to issue a friendly, overdue, or final collections email and
+                keep the communication history attached to this invoice.
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
@@ -230,27 +335,44 @@ function InvoiceDetailPage() {
                   {payments.map((p) => (
                     <li
                       key={p.id}
-                      className="flex items-center justify-between py-2 text-sm"
+                      className="flex items-center justify-between gap-3 py-2 text-sm"
                     >
                       <div>
-                        <div className="font-medium capitalize">
-                          {p.method.replace("_", " ")}{" "}
-                          <span className="text-xs text-muted-foreground">
-                            · {formatDate(p.paid_at)}
+                        <div className="flex flex-wrap items-center gap-2 font-medium capitalize">
+                          <span>
+                            {p.method.replace("_", " ")}{" "}
+                            <span className="text-xs text-muted-foreground">
+                              · {formatDate(p.paid_at)}
+                            </span>
                           </span>
+                          <StatusBadge status={p.status} />
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {p.reference ?? "—"}
+                          {p.cancellation_reason ? ` · ${p.cancellation_reason}` : ""}
                         </div>
                       </div>
-                      <span
-                        className={`font-mono font-medium ${
-                          p.direction === "out" ? "text-destructive" : ""
-                        }`}
-                      >
-                        {p.direction === "out" ? "−" : ""}
-                        {formatMoney(p.amount, currency)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-mono font-medium ${
+                            p.direction === "out" ? "text-destructive" : ""
+                          }`}
+                        >
+                          {p.direction === "out" ? "−" : ""}
+                          {formatMoney(p.amount, currency)}
+                        </span>
+                        {finance.canReversePostedDocuments &&
+                          p.status === "completed" &&
+                          p.direction === "in" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setReversePaymentId(p.id)}
+                            >
+                              Reverse
+                            </Button>
+                          )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -258,7 +380,45 @@ function InvoiceDetailPage() {
             </CardContent>
           </Card>
 
+          <PostingAuditCard
+            audit={postingAudit.data}
+            currency={currency}
+            isLoading={postingAudit.isLoading}
+            emptyDescription="A posted invoice should produce a clean receivable and revenue journal. If this stays empty, treat it as a finance exception."
+          />
+
           <RefundsHistory source="invoice" sourceId={invoice.id} currency={currency} />
+
+          <DocumentCommunicationCard
+            documentType="invoice"
+            documentId={invoice.id}
+            title="Delivery & reminders"
+            actions={
+              <div className="flex gap-2">
+                {finance.canSendCustomerDocuments && (
+                  <Button size="sm" variant="outline" onClick={() => openSend()}>
+                    <Mail className="mr-1 h-3.5 w-3.5" /> Send
+                  </Button>
+                )}
+                {finance.canManageCollections && !fullyPaid && (
+                  <Button size="sm" variant="outline" onClick={() => openReminder()}>
+                    <BellRing className="mr-1 h-3.5 w-3.5" /> Reminder
+                  </Button>
+                )}
+              </div>
+            }
+            onResend={(delivery) => {
+              if (
+                delivery.template_key === "reminder_friendly" ||
+                delivery.template_key === "reminder_overdue" ||
+                delivery.template_key === "reminder_final"
+              ) {
+                openReminder(delivery);
+                return;
+              }
+              openSend(delivery);
+            }}
+          />
         </div>
 
         <div className="space-y-4">
@@ -288,6 +448,9 @@ function InvoiceDetailPage() {
               <Row label="Issued" value={formatDate(invoice.issue_date)} />
               <Row label="Due" value={formatDate(invoice.due_date)} />
               <Row label="Created" value={formatDateTime(invoice.created_at)} />
+              {invoice.cancellation_reason && (
+                <Row label="Void reason" value={invoice.cancellation_reason} />
+              )}
               <Separator className="my-2" />
               <Row label="Subtotal" value={<MoneyDisplay value={invoice.subtotal} currency={currency} muted />} />
               <Row label="Tax" value={<MoneyDisplay value={invoice.tax_total} currency={currency} muted />} />
@@ -336,6 +499,121 @@ function InvoiceDetailPage() {
           currency={currency}
         />
       )}
+
+      <FinanceReasonDialog
+        open={voidOpen}
+        onOpenChange={setVoidOpen}
+        title="Void invoice"
+        description="This will cancel the posted invoice without deleting it. Payments must already be reversed."
+        confirmLabel="Void invoice"
+        pendingLabel="Voiding…"
+        actionTone="danger"
+        onConfirm={async (reason) => {
+          try {
+            await voidInvoice.mutateAsync({ invoiceId: invoice.id, reason });
+            toast.success("Invoice voided");
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to void invoice");
+            throw error;
+          }
+        }}
+      />
+
+      <FinanceReasonDialog
+        open={!!reversePaymentId}
+        onOpenChange={(open) => {
+          if (!open) setReversePaymentId(null);
+        }}
+        title="Reverse payment"
+        description="This keeps the original payment in audit history and marks it cancelled through a controlled finance reversal."
+        confirmLabel="Reverse payment"
+        pendingLabel="Reversing…"
+        actionTone="danger"
+        onConfirm={async (reason) => {
+          if (!reversePaymentId) return;
+          try {
+            await reversePayment.mutateAsync({ paymentId: reversePaymentId, reason });
+            toast.success("Payment reversed");
+            setReversePaymentId(null);
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to reverse payment");
+            throw error;
+          }
+        }}
+      />
+
+      <SendDocumentDialog
+        open={sendOpen}
+        onOpenChange={(open) => {
+          if (!open) setDeliverySeed(null);
+          setSendOpen(open);
+        }}
+        title="Send invoice"
+        description="Send the customer a branded invoice email with a secure document link."
+        documentType="invoice"
+        documentId={invoice.id}
+        eventType="send"
+        templateOptions={[{ key: "invoice_email", label: "Invoice email" }]}
+        defaultRecipient={invoice.customers?.email}
+        defaultRecipientName={invoice.customers?.name}
+        variables={{
+          company_name: company?.name,
+          recipient_name: invoice.customers?.name,
+          customer_name: invoice.customers?.name,
+          document_label: "invoice",
+          document_number: invoice.invoice_number,
+          document_date: formatDate(invoice.issue_date),
+          due_date: invoice.due_date ? formatDate(invoice.due_date) : null,
+          document_total: formatMoney(invoice.total, currency),
+          balance_due: formatMoney(remaining, currency),
+        }}
+        seed={deliverySeed}
+      />
+
+      <SendDocumentDialog
+        open={reminderOpen}
+        onOpenChange={(open) => {
+          if (!open) setDeliverySeed(null);
+          setReminderOpen(open);
+        }}
+        title="Send payment reminder"
+        description="Choose a reminder preset, adjust the wording if needed, and keep the collections history on this invoice."
+        documentType="invoice"
+        documentId={invoice.id}
+        eventType="reminder"
+        templateOptions={[
+          {
+            key: "reminder_friendly",
+            label: "Friendly reminder",
+            description: "Use when the balance is recent and you want a softer nudge.",
+          },
+          {
+            key: "reminder_overdue",
+            label: "Overdue reminder",
+            description: "Use when the due date has passed and payment is expected now.",
+          },
+          {
+            key: "reminder_final",
+            label: "Final reminder",
+            description: "Use when prior reminders have been ignored and you need firmer wording.",
+          },
+        ]}
+        defaultRecipient={invoice.customers?.email}
+        defaultRecipientName={invoice.customers?.name}
+        variables={{
+          company_name: company?.name,
+          recipient_name: invoice.customers?.name,
+          customer_name: invoice.customers?.name,
+          document_label: "invoice",
+          document_number: invoice.invoice_number,
+          document_date: formatDate(invoice.issue_date),
+          due_date: invoice.due_date ? formatDate(invoice.due_date) : null,
+          document_total: formatMoney(invoice.total, currency),
+          balance_due: formatMoney(remaining, currency),
+        }}
+        submitLabel="Send reminder"
+        seed={deliverySeed}
+      />
     </div>
   );
 }

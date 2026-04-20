@@ -17,6 +17,8 @@ function SettingsLayout() {
     { href: "/settings/users", label: "Users & Roles", show: true },
     { href: "/settings/branches", label: "Branches & Registers", show: !!settings?.pos_enabled || !!settings?.cash_sessions_enabled },
     { href: "/settings/tax-rates", label: "Tax Rates", show: !!settings?.tax_reporting_enabled },
+    { href: "/settings/document-templates", label: "Document Templates", show: true },
+    { href: "/settings/collections", label: "Collections & Delivery", show: true },
   ].filter((t) => t.show);
 
   // Render tab navigation + outlet. If at /settings root, show company info section.

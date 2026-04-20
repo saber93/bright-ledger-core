@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type AppRole =
   | "owner"
   | "accountant"
+  | "cashier"
   | "sales_manager"
   | "inventory_manager"
   | "store_manager"
@@ -33,10 +34,12 @@ const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [contextLoading, setContextLoading] = useState(false);
   const [companyId, setCompanyIdState] = useState<string | null>(null);
   const [company, setCompany] = useState<CompanyContext | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const loading = sessionLoading || contextLoading;
 
   // Bootstrap: subscribe FIRST, then fetch session.
   useEffect(() => {
@@ -44,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(s);
       setUser(s?.user ?? null);
       if (!s?.user) {
+        setSessionLoading(false);
+        setContextLoading(false);
         setCompanyIdState(null);
         setCompany(null);
         setRoles([]);
@@ -53,7 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      setLoading(false);
+      if (!data.session?.user) {
+        setSessionLoading(false);
+        setContextLoading(false);
+      }
     });
 
     return () => sub.subscription.unsubscribe();
@@ -62,7 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // When user changes, load default company + memberships
   useEffect(() => {
     if (!user) return;
-    void loadCompanyContext(user.id);
+    setContextLoading(true);
+    void loadCompanyContext(user.id).finally(() => {
+      setContextLoading(false);
+      setSessionLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -105,6 +117,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
+    setSessionLoading(false);
+    setContextLoading(false);
     setCompanyIdState(null);
     setCompany(null);
     setRoles([]);

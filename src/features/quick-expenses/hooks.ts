@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getDefaultPostingAccounts } from "@/features/accounting/default-accounts";
+import { ensureAccountingPeriodUnlocked } from "@/features/accounting/locks";
 import { useAuth } from "@/lib/auth";
 
 export type QuickExpenseMethod =
@@ -115,13 +117,14 @@ async function nextExpenseNumber(companyId: string) {
     .select("bill_prefix")
     .eq("company_id", companyId)
     .maybeSingle();
-  const prefix = `EXP-${(settings?.bill_prefix ?? "BILL-").replace("BILL-", "")}` || "EXP-";
+  const prefixSuffix = (settings?.bill_prefix ?? "BILL-").replace("BILL-", "");
+  const prefix = `EXP-${prefixSuffix}`;
   const { count } = await supabase
     .from("quick_expenses")
     .select("id", { count: "exact", head: true })
     .eq("company_id", companyId);
   const n = (count ?? 0) + 1;
-  return `EXP-${String(n).padStart(5, "0")}`;
+  return `${prefix}${String(n).padStart(5, "0")}`;
 }
 
 export interface QuickExpenseInput {
@@ -146,6 +149,8 @@ export function useUpsertQuickExpense() {
   return useMutation({
     mutationFn: async (input: QuickExpenseInput) => {
       if (!companyId) throw new Error("Missing company");
+      await ensureAccountingPeriodUnlocked(companyId, input.date, "quick expense posting");
+      const defaults = await getDefaultPostingAccounts(companyId);
 
       const payload = {
         date: input.date,
@@ -155,7 +160,9 @@ export function useUpsertQuickExpense() {
         payment_method: input.payment_method,
         paid: input.paid,
         account_id: input.account_id,
-        payable_account_id: input.paid ? null : input.payable_account_id ?? null,
+        payable_account_id: input.paid
+          ? null
+          : input.payable_account_id ?? defaults.accountsPayableId ?? null,
         tax_rate_id: input.tax_rate_id ?? null,
         supplier_id: input.supplier_id ?? null,
         branch_id: input.branch_id ?? null,
@@ -221,5 +228,17 @@ export async function getReceiptSignedUrl(path: string): Promise<string | null> 
   const { data } = await supabase.storage
     .from("expense-receipts")
     .createSignedUrl(path, 60 * 60);
-  return data?.signedUrl ?? null;
+  const signedUrl = data?.signedUrl ?? null;
+  if (!signedUrl) return null;
+
+  try {
+    const head = await fetch(signedUrl, { method: "HEAD" });
+    if (head.ok) return signedUrl;
+    if (![400, 405, 501].includes(head.status)) return null;
+
+    const get = await fetch(signedUrl, { method: "GET" });
+    return get.ok ? signedUrl : null;
+  } catch {
+    return null;
+  }
 }

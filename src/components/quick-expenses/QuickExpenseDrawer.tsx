@@ -31,7 +31,6 @@ import { formatMoney } from "@/lib/format";
 import {
   uploadExpenseReceipt,
   getReceiptSignedUrl,
-  useDeleteQuickExpense,
   useQuickExpense,
   useUpsertQuickExpense,
   type QuickExpenseInput,
@@ -76,7 +75,6 @@ export function QuickExpenseDrawer({
   );
 
   const upsert = useUpsertQuickExpense();
-  const del = useDeleteQuickExpense();
 
   const [form, setForm] = useState<QuickExpenseInput>({
     date: new Date().toISOString().slice(0, 10),
@@ -194,6 +192,10 @@ export function QuickExpenseDrawer({
   const payableObj = liabilityAccounts.find((a) => a.id === form.payable_account_id);
 
   const submit = async () => {
+    if (isEdit) {
+      toast.error("Posted quick expenses are immutable. Open the detail page to inspect the posted ledger trace.");
+      return;
+    }
     if (!form.description.trim()) {
       toast.error("Add a description");
       return;
@@ -227,14 +229,7 @@ export function QuickExpenseDrawer({
 
   const handleDelete = async () => {
     if (!expenseId) return;
-    if (!confirm("Delete this expense?")) return;
-    try {
-      await del.mutateAsync(expenseId);
-      toast.success("Expense deleted");
-      onOpenChange(false);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Delete failed");
-    }
+    toast.error("Posted quick expenses cannot be deleted. Create a reversing adjustment instead.");
   };
 
   return (
@@ -254,6 +249,11 @@ export function QuickExpenseDrawer({
           </div>
         ) : (
           <div className="mt-6 space-y-5">
+            {isEdit && (
+              <div className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning-foreground">
+                This expense has already posted to the ledger and is now read-only for audit safety.
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Date</Label>
@@ -584,9 +584,9 @@ export function QuickExpenseDrawer({
                     </Link>
                   </Button>
                 )}
-                <Button onClick={submit} disabled={upsert.isPending}>
+                <Button onClick={submit} disabled={upsert.isPending || isEdit}>
                   {upsert.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-                  {isEdit ? "Save changes" : "Save expense"}
+                  {isEdit ? "Immutable after posting" : "Save expense"}
                 </Button>
               </div>
             </div>

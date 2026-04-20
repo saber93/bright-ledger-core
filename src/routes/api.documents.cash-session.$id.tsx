@@ -9,7 +9,7 @@ import {
   notFoundHtml,
   renderDocumentHtml,
   requireDocumentAccess,
-} from "./api.documents.shared";
+} from "./-api.documents.shared";
 
 export const Route = createFileRoute("/api/documents/cash-session/$id")({
   server: {
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/documents/cash-session/$id")({
 
         // POS payment totals by method for this session's orders
         const orderIds = (orders ?? []).map((o) => o.id);
-        let payByMethod = new Map<string, number>();
+        const payByMethod = new Map<string, number>();
         let posTotal = 0;
         if (orderIds.length > 0) {
           const { data: pays } = await supabaseAdmin

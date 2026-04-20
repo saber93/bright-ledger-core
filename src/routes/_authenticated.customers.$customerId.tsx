@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useCustomer } from "@/features/customers/hooks";
 import { useInvoicesForCustomer } from "@/features/invoices/hooks";
 import { useSalesOrdersForCustomer } from "@/features/sales-orders/hooks";
@@ -13,8 +14,15 @@ import { DataTable } from "@/components/data/DataTable";
 import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, ChevronRight } from "lucide-react";
-import { formatDate } from "@/lib/format";
+import { DocumentCommunicationCard } from "@/components/delivery/DocumentCommunicationCard";
+import { SendDocumentDialog } from "@/components/delivery/SendDocumentDialog";
+import type { DocumentDelivery } from "@/features/delivery/hooks";
+import { useFinancePermissions } from "@/features/accounting/permissions";
+import { Button } from "@/components/ui/button";
+import { Wallet, ChevronRight, Printer, Mail } from "lucide-react";
+import { formatDate, formatMoney } from "@/lib/format";
+import { openDocument } from "@/lib/open-document";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetail,
@@ -28,18 +36,66 @@ function CustomerDetail() {
   const { data: onlineOrders } = useOnlineOrdersForEmail(customer?.email);
   const { data: creditBalance } = useCustomerCreditBalance(customerId);
   const { data: creditNotes } = useCreditNotesForCustomer(customerId);
+  const { company } = useAuth();
+  const finance = useFinancePermissions();
+  const [sendOpen, setSendOpen] = useState(false);
+  const [deliverySeed, setDeliverySeed] = useState<{
+    recipient?: string | null;
+    recipientName?: string | null;
+    subject?: string | null;
+    message?: string | null;
+    templateKey?: "customer_statement";
+  } | null>(null);
 
   if (isLoading) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
   if (!customer) return <div className="py-10 text-sm text-muted-foreground">Not found.</div>;
 
   const balance = Number(creditBalance?.balance ?? 0);
   const balanceCurrency = creditBalance?.currency ?? customer.currency ?? "USD";
+  const openInvoices = (invoices ?? []).filter((invoice) => {
+    const remaining = Number(invoice.total) - Number(invoice.amount_paid);
+    return invoice.status !== "cancelled" && remaining > 0.005;
+  });
+  const totalDue = openInvoices.reduce(
+    (sum, invoice) => sum + Math.max(0, Number(invoice.total) - Number(invoice.amount_paid)),
+    0,
+  );
+
+  function openSend(seed?: DocumentDelivery) {
+    setDeliverySeed(
+      seed
+        ? {
+            recipient: seed.recipient,
+            recipientName: seed.recipient_name,
+            subject: seed.subject,
+            message: seed.message,
+            templateKey: "customer_statement",
+          }
+        : null,
+    );
+    setSendOpen(true);
+  }
 
   return (
     <div>
       <PageHeader
         title={customer.name}
         description={customer.email ?? "—"}
+        actions={
+          finance.canManageCollections ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => void openDocument(`/api/documents/customer-statement/${customer.id}`)}
+              >
+                <Printer className="mr-1 h-4 w-4" /> Print statement
+              </Button>
+              <Button variant="outline" onClick={() => openSend()}>
+                <Mail className="mr-1 h-4 w-4" /> Send statement
+              </Button>
+            </>
+          ) : undefined
+        }
         breadcrumbs={
           <span className="inline-flex items-center gap-1">
             <Link to="/customers" className="hover:text-foreground">
@@ -101,6 +157,7 @@ function CustomerDetail() {
           <TabsTrigger value="online">Online orders ({onlineOrders?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="invoices">Invoices ({invoices?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="credits">Credits & refunds ({creditNotes?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="statement">Statement</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -294,7 +351,96 @@ function CustomerDetail() {
             ]}
           />
         </TabsContent>
+
+        <TabsContent value="statement" className="mt-4 space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border bg-card p-5">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Total due
+              </div>
+              <div className="mt-2 text-2xl font-semibold">
+                {formatMoney(totalDue, balanceCurrency)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Across {openInvoices.length} open invoice{openInvoices.length === 1 ? "" : "s"}.
+              </p>
+            </div>
+            <div className="rounded-xl border bg-card p-5">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Available credit
+              </div>
+              <div className="mt-2 text-2xl font-semibold">
+                {formatMoney(balance, balanceCurrency)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Credit note balance available for future allocation.
+              </p>
+            </div>
+            <div className="rounded-xl border bg-card p-5">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Net customer position
+              </div>
+              <div className="mt-2 text-2xl font-semibold">
+                {formatMoney(totalDue - balance, balanceCurrency)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Open invoices less available credit as of today.
+              </p>
+            </div>
+          </div>
+
+          <DocumentCommunicationCard
+            documentType="customer_statement"
+            documentId={customer.id}
+            title="Statement delivery history"
+            actions={
+              finance.canManageCollections ? (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void openDocument(`/api/documents/customer-statement/${customer.id}`)}
+                  >
+                    <Printer className="mr-1 h-3.5 w-3.5" /> Print
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => openSend()}>
+                    <Mail className="mr-1 h-3.5 w-3.5" /> Send
+                  </Button>
+                </div>
+              ) : undefined
+            }
+            onResend={(delivery) => openSend(delivery)}
+          />
+        </TabsContent>
       </Tabs>
+
+      <SendDocumentDialog
+        open={sendOpen}
+        onOpenChange={(open) => {
+          if (!open) setDeliverySeed(null);
+          setSendOpen(open);
+        }}
+        title="Send customer statement"
+        description="Send a current account summary with open invoices, recent payments, and available credit."
+        documentType="customer_statement"
+        documentId={customer.id}
+        eventType="statement"
+        templateOptions={[{ key: "customer_statement", label: "Customer statement email" }]}
+        defaultRecipient={customer.email}
+        defaultRecipientName={customer.name}
+        variables={{
+          company_name: company?.name,
+          recipient_name: customer.name,
+          customer_name: customer.name,
+          document_label: "statement",
+          document_number: `STATEMENT-${new Date().toISOString().slice(0, 10)}`,
+          document_date: formatDate(new Date().toISOString()),
+          statement_total_due: formatMoney(totalDue, balanceCurrency),
+          available_credit: formatMoney(balance, balanceCurrency),
+          balance_due: formatMoney(totalDue, balanceCurrency),
+        }}
+        seed={deliverySeed}
+      />
     </div>
   );
 }

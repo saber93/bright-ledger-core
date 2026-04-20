@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Undo2, Loader2, FileText, Receipt, Printer } from "lucide-react";
+import { ArrowLeft, Undo2, Loader2, FileText, Receipt, Printer, Mail } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/data/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,9 +10,17 @@ import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/data/StatusBadge";
 import { MoneyDisplay } from "@/components/data/MoneyDisplay";
 import { useCreditNote } from "@/features/refunds/hooks";
+import { usePostingAudit } from "@/features/accounting/ledger";
+import { useVoidCreditNote } from "@/features/accounting/controls";
+import { useFinancePermissions } from "@/features/accounting/permissions";
+import { DocumentCommunicationCard } from "@/components/delivery/DocumentCommunicationCard";
+import { SendDocumentDialog } from "@/components/delivery/SendDocumentDialog";
+import type { DocumentDelivery } from "@/features/delivery/hooks";
 import { useAuth } from "@/lib/auth";
 import { openDocument } from "@/lib/open-document";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
+import { PostingAuditCard } from "@/components/accounting/PostingAuditCard";
+import { FinanceReasonDialog } from "@/components/accounting/FinanceReasonDialog";
 
 export const Route = createFileRoute("/_authenticated/refunds/$creditNoteId")({
   component: RefundDetailPage,
@@ -20,6 +30,20 @@ function RefundDetailPage() {
   const { creditNoteId } = Route.useParams();
   const { data, isLoading } = useCreditNote(creditNoteId);
   const { company } = useAuth();
+  const finance = useFinancePermissions();
+  const [voidOpen, setVoidOpen] = useState(false);
+  const [sendOpen, setSendOpen] = useState(false);
+  const [deliverySeed, setDeliverySeed] = useState<{
+    recipient?: string | null;
+    recipientName?: string | null;
+    subject?: string | null;
+    message?: string | null;
+    templateKey?: "credit_note_email";
+  } | null>(null);
+  const voidCreditNote = useVoidCreditNote();
+  const postingAudit = usePostingAudit({
+    sourceHrefs: [`/refunds/${creditNoteId}`],
+  });
   const currency = company?.currency ?? "USD";
 
   if (isLoading) {
@@ -59,6 +83,7 @@ function RefundDetailPage() {
       customers: { id: string; name: string; email: string | null } | null;
       customer_invoices: { id: string; invoice_number: string } | null;
       pos_orders: { id: string; order_number: string } | null;
+      void_reason: string | null;
     };
     lines: Array<{
       id: string;
@@ -87,6 +112,20 @@ function RefundDetailPage() {
   };
 
   const cur = note.currency || currency;
+  function openSend(seed?: DocumentDelivery) {
+    setDeliverySeed(
+      seed
+        ? {
+            recipient: seed.recipient,
+            recipientName: seed.recipient_name,
+            subject: seed.subject,
+            message: seed.message,
+            templateKey: "credit_note_email",
+          }
+        : null,
+    );
+    setSendOpen(true);
+  }
 
   const allocByType = {
     invoice: allocations
@@ -121,12 +160,24 @@ function RefundDetailPage() {
         }
         description={`Issued ${formatDate(note.issue_date)}${note.customers?.name ? ` · ${note.customers.name}` : ""}`}
         actions={
-          <Button
-            variant="outline"
-            onClick={() => void openDocument(`/api/documents/credit-note/${note.id}`)}
-          >
-            <Printer className="mr-1 h-4 w-4" /> Print / PDF
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => void openDocument(`/api/documents/credit-note/${note.id}`)}
+            >
+              <Printer className="mr-1 h-4 w-4" /> Print / PDF
+            </Button>
+            {finance.canSendCustomerDocuments && (
+              <Button variant="outline" onClick={() => openSend()}>
+                <Mail className="mr-1 h-4 w-4" /> Send credit note
+              </Button>
+            )}
+            {note.status !== "void" && finance.canReversePostedDocuments && (
+              <Button variant="outline" onClick={() => setVoidOpen(true)}>
+                Void credit note
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -265,6 +316,13 @@ function RefundDetailPage() {
             </CardContent>
           </Card>
 
+          <PostingAuditCard
+            audit={postingAudit.data}
+            currency={cur}
+            isLoading={postingAudit.isLoading}
+            emptyDescription="An issued refund should trace to the credit note journal and, when applicable, allocation, cash-refund, or restock journals."
+          />
+
           {note.restock && restockedGoods.length > 0 && (
             <Card>
               <CardHeader>
@@ -282,6 +340,20 @@ function RefundDetailPage() {
               </CardContent>
             </Card>
           )}
+
+          <DocumentCommunicationCard
+            documentType="credit_note"
+            documentId={note.id}
+            title="Delivery history"
+            actions={
+              finance.canSendCustomerDocuments ? (
+                <Button size="sm" variant="outline" onClick={() => openSend()}>
+                  <Mail className="mr-1 h-3.5 w-3.5" /> Send
+                </Button>
+              ) : undefined
+            }
+            onResend={(delivery) => openSend(delivery)}
+          />
         </div>
 
         <div className="space-y-4">
@@ -295,7 +367,11 @@ function RefundDetailPage() {
                 <Row
                   label="Invoice"
                   value={
-                    <Link to="/invoices" className="font-mono text-primary hover:underline">
+                    <Link
+                      to="/invoices/$invoiceId"
+                      params={{ invoiceId: note.customer_invoices.id }}
+                      className="font-mono text-primary hover:underline"
+                    >
                       {note.customer_invoices.invoice_number}
                     </Link>
                   }
@@ -332,6 +408,7 @@ function RefundDetailPage() {
               <Row label="Issued" value={formatDate(note.issue_date)} />
               <Row label="Created" value={formatDateTime(note.created_at)} />
               {note.reason && <Row label="Reason" value={note.reason} />}
+              {note.void_reason && <Row label="Void reason" value={note.void_reason} />}
               <Row label="Restock" value={note.restock ? "Yes" : "No"} />
             </CardContent>
           </Card>
@@ -361,6 +438,51 @@ function RefundDetailPage() {
           )}
         </div>
       </div>
+
+      <FinanceReasonDialog
+        open={voidOpen}
+        onOpenChange={setVoidOpen}
+        title="Void credit note"
+        description="Only unallocated credit notes with no cash refund can be voided. Otherwise use an explicit correcting workflow."
+        confirmLabel="Void credit note"
+        pendingLabel="Voiding…"
+        actionTone="danger"
+        onConfirm={async (reason) => {
+          try {
+            await voidCreditNote.mutateAsync({ creditNoteId: note.id, reason });
+            toast.success("Credit note voided");
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to void credit note");
+            throw error;
+          }
+        }}
+      />
+
+      <SendDocumentDialog
+        open={sendOpen}
+        onOpenChange={(open) => {
+          if (!open) setDeliverySeed(null);
+          setSendOpen(open);
+        }}
+        title="Send credit note"
+        description="Email a branded credit note with a secure document link and keep the send history on this refund."
+        documentType="credit_note"
+        documentId={note.id}
+        eventType="send"
+        templateOptions={[{ key: "credit_note_email", label: "Credit note email" }]}
+        defaultRecipient={note.customers?.email}
+        defaultRecipientName={note.customers?.name}
+        variables={{
+          company_name: company?.name,
+          recipient_name: note.customers?.name,
+          customer_name: note.customers?.name,
+          document_label: "credit note",
+          document_number: note.credit_note_number,
+          document_date: formatDate(note.issue_date),
+          document_total: formatMoney(note.total, cur),
+        }}
+        seed={deliverySeed}
+      />
     </div>
   );
 }

@@ -2,7 +2,39 @@
  * Shared utilities for the browser print-to-PDF document routes.
  * Worker-safe: pure HTML strings + small helpers, no native deps.
  */
+import { createHash, randomBytes } from "node:crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+type AppRole =
+  | "owner"
+  | "accountant"
+  | "cashier"
+  | "sales_manager"
+  | "inventory_manager"
+  | "store_manager"
+  | "staff";
+
+type UntypedAdminRelation = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+const adminUntyped = supabaseAdmin as unknown as {
+  from: (relation: string) => UntypedAdminRelation;
+};
+
+interface AuthenticatedUserResult {
+  ok: true;
+  userId: string;
+  roles: AppRole[];
+}
+
+interface FailedAuthResult {
+  ok: false;
+  response: Response;
+}
+
+interface DocumentAccessOptions {
+  documentType?: string;
+  documentId?: string;
+}
 
 /**
  * Authorization guard for document print routes.
@@ -21,38 +53,43 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export async function requireDocumentAccess(
   request: Request,
   companyId: string,
+  options?: DocumentAccessOptions,
 ): Promise<
-  | { ok: true; userId: string }
+  | { ok: true; userId: string | null }
   | { ok: false; response: Response }
 > {
-  const token = extractAccessToken(request);
-  if (!token) {
-    return { ok: false, response: unauthorizedHtml("Sign in required to view this document.") };
+  const user = await requireAuthenticatedCompanyUser(request, companyId, undefined, "html");
+  if (user.ok) {
+    return { ok: true, userId: user.userId };
   }
 
-  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
-  if (userErr || !userData?.user) {
-    return { ok: false, response: unauthorizedHtml("Your session has expired. Please sign in again.") };
+  if (options?.documentType && options?.documentId) {
+    const shareToken = extractShareToken(request);
+    if (shareToken) {
+      const allowed = await validateDocumentShareToken({
+        companyId,
+        documentType: options.documentType,
+        documentId: options.documentId,
+        token: shareToken,
+      });
+      if (allowed) {
+        return { ok: true, userId: null };
+      }
+    }
   }
 
-  const userId = userData.user.id;
-
-  const { data: membership, error: memErr } = await supabaseAdmin
-    .from("company_members")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("company_id", companyId)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (memErr || !membership) {
-    return { ok: false, response: forbiddenHtml() };
-  }
-
-  return { ok: true, userId };
+  return user;
 }
 
-function extractAccessToken(request: Request): string | null {
+export async function requireCompanyApiAccess(
+  request: Request,
+  companyId: string,
+  allowedRoles?: AppRole[],
+): Promise<AuthenticatedUserResult | FailedAuthResult> {
+  return requireAuthenticatedCompanyUser(request, companyId, allowedRoles, "json");
+}
+
+export function extractAccessToken(request: Request): string | null {
   const url = new URL(request.url);
   const qs = url.searchParams.get("token");
   if (qs) return qs;
@@ -69,6 +106,182 @@ function extractAccessToken(request: Request): string | null {
   }
 
   return null;
+}
+
+export function extractShareToken(request: Request): string | null {
+  const url = new URL(request.url);
+  const share = url.searchParams.get("share");
+  return share?.trim() || null;
+}
+
+export function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+  });
+}
+
+export function hashDocumentShareToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+export async function createDocumentShareToken({
+  companyId,
+  documentType,
+  documentId,
+  createdBy,
+  expiresInDays = 14,
+}: {
+  companyId: string;
+  documentType: string;
+  documentId: string;
+  createdBy: string | null;
+  expiresInDays?: number;
+}) {
+  const token = randomBytes(24).toString("base64url");
+  const tokenHash = hashDocumentShareToken(token);
+  const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await adminUntyped
+    .from("document_share_tokens")
+    .insert({
+      company_id: companyId,
+      document_type: documentType,
+      document_id: documentId,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+      created_by: createdBy,
+    })
+    .select("id")
+    .single();
+
+  if (error) throw new Error(error.message ?? "Failed to create document share link");
+
+  return {
+    id: String(data.id),
+    token,
+    expiresAt,
+  };
+}
+
+export function buildAbsoluteUrl(request: Request, path: string) {
+  const base = process.env.APP_URL?.trim() || new URL(request.url).origin;
+  return new URL(path, base).toString();
+}
+
+export function buildSharedDocumentUrl(request: Request, path: string, shareToken: string) {
+  const url = new URL(buildAbsoluteUrl(request, path));
+  url.searchParams.set("share", shareToken);
+  return url.toString();
+}
+
+async function requireAuthenticatedCompanyUser(
+  request: Request,
+  companyId: string,
+  allowedRoles: AppRole[] | undefined,
+  mode: "html" | "json",
+): Promise<AuthenticatedUserResult | FailedAuthResult> {
+  const token = extractAccessToken(request);
+  if (!token) {
+    return {
+      ok: false,
+      response:
+        mode === "html"
+          ? unauthorizedHtml("Sign in required to view this document.")
+          : jsonResponse({ error: "Sign in required." }, 401),
+    };
+  }
+
+  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+  if (userErr || !userData?.user) {
+    return {
+      ok: false,
+      response:
+        mode === "html"
+          ? unauthorizedHtml("Your session has expired. Please sign in again.")
+          : jsonResponse({ error: "Your session has expired. Please sign in again." }, 401),
+    };
+  }
+
+  const userId = userData.user.id;
+
+  const { data: membership, error: memErr } = await supabaseAdmin
+    .from("company_members")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("company_id", companyId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (memErr || !membership) {
+    return {
+      ok: false,
+      response: mode === "html" ? forbiddenHtml() : jsonResponse({ error: "Access denied." }, 403),
+    };
+  }
+
+  const { data: roleRows, error: roleErr } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("company_id", companyId);
+
+  if (roleErr) {
+    return {
+      ok: false,
+      response:
+        mode === "html"
+          ? forbiddenHtml()
+          : jsonResponse({ error: "Failed to verify your company role." }, 403),
+    };
+  }
+
+  const roles = (roleRows ?? []).map((row) => row.role as AppRole);
+  if (allowedRoles && allowedRoles.length > 0 && !roles.some((role) => allowedRoles.includes(role))) {
+    return {
+      ok: false,
+      response:
+        mode === "html"
+          ? forbiddenHtml()
+          : jsonResponse({ error: "You do not have permission for this finance action." }, 403),
+    };
+  }
+
+  return { ok: true, userId, roles };
+}
+
+async function validateDocumentShareToken({
+  companyId,
+  documentType,
+  documentId,
+  token,
+}: {
+  companyId: string;
+  documentType: string;
+  documentId: string;
+  token: string;
+}) {
+  const now = new Date().toISOString();
+  const tokenHash = hashDocumentShareToken(token);
+  const query = adminUntyped
+    .from("document_share_tokens")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("document_type", documentType)
+    .eq("document_id", documentId)
+    .eq("token_hash", tokenHash)
+    .is("revoked_at", null)
+    .gt("expires_at", now);
+
+  const result = await query.maybeSingle();
+  if (result.error || !result.data?.id) return false;
+
+  await adminUntyped
+    .from("document_share_tokens")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("id", String(result.data.id));
+
+  return true;
 }
 
 function unauthorizedHtml(message: string): Response {
