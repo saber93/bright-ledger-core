@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { PageHeader } from "@/components/data/PageHeader";
 import { EmptyState } from "@/components/data/EmptyState";
 import { ShoppingBag } from "lucide-react";
@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { useState, useMemo } from "react";
+import { useAuth } from "@/lib/auth";
+import { useStoreSetup } from "@/features/storefront/hooks";
 
 const STATUS_FILTERS: (OnlineOrderStatus | "all")[] = [
   "all",
@@ -28,8 +30,12 @@ export const Route = createFileRoute("/_authenticated/store")({
 });
 
 function StorePage() {
+  const location = useLocation();
+  const isStoreIndex = location.pathname === "/store";
   const enabled = useModuleEnabled("online_store_enabled");
-  const { data, isLoading } = useOnlineOrders();
+  const { data, isLoading } = useOnlineOrders(isStoreIndex);
+  const { companyId } = useAuth();
+  const setup = useStoreSetup(isStoreIndex ? companyId : null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<OnlineOrderStatus | "all">("all");
 
@@ -44,6 +50,10 @@ function StorePage() {
       return matchesSearch && matchesStatus;
     });
   }, [data, search, statusFilter]);
+
+  if (!isStoreIndex) {
+    return <Outlet />;
+  }
 
   if (!enabled) {
     return (
@@ -62,7 +72,46 @@ function StorePage() {
 
   return (
     <div>
-      <PageHeader title="Online Store" description="Manage online orders, fulfillment, and shipping." />
+      <PageHeader
+        title="Online Store"
+        description="Manage online orders, fulfillment, and shipping."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/store/setup">Store setup</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/store/design">Store design</Link>
+            </Button>
+            {setup.data?.storeUrl ? (
+              <Button variant="outline" asChild>
+                <a href={setup.data.storeUrl}>Preview storefront</a>
+              </Button>
+            ) : null}
+          </div>
+        }
+      />
+
+      {setup.data ? (
+        <div className="mb-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-xl border bg-card p-4">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Store URL</div>
+            <div className="mt-2 font-medium">{setup.data.storeUrl}</div>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Published products</div>
+            <div className="mt-2 text-2xl font-semibold">
+              {setup.data.products.filter((product) => product.isPublished).length}
+            </div>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Checkout mode</div>
+            <div className="mt-2 font-medium">
+              {setup.data.settings.onlinePaymentsEnabled ? "Online payment + invoice fallback" : "Invoice-first"}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Input

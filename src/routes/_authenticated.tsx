@@ -38,6 +38,7 @@ import {
   Undo2,
   ShieldAlert,
   BellRing,
+  Paintbrush2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanySettings } from "@/features/settings/hooks";
@@ -130,6 +131,7 @@ const opsGroup: NavItemDef[] = [
   { label: "Cash Sessions", href: "/cash-sessions", icon: Banknote, flag: "cash_sessions_enabled" },
   { label: "Products & Inventory", href: "/inventory", icon: Package },
   { label: "Online Store", href: "/store", icon: ShoppingBag },
+  { label: "Store Design", href: "/store/design", icon: Paintbrush2 },
   { label: "Reports", href: "/reports", icon: BarChart3 },
 ];
 

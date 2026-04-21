@@ -180,11 +180,55 @@ function OnlineOrderDetail() {
             )}
           </Card>
 
+          <Card title="Fulfillment">
+            <KV
+              label="Type"
+              value={order.fulfillment_type === "pickup" ? "Pickup" : "Shipping"}
+            />
+            <KV label="Method" value={order.shipping_method_label ?? "—"} />
+            <KV label="ETA" value={order.shipping_eta ?? "—"} />
+          </Card>
+
           <Card title="Payment">
             <KV label="Method" value={order.payment_method ?? "—"} />
             <KV label="Reference" value={order.payment_reference ?? "—"} mono />
             <KV label="Placed" value={formatDate(order.placed_at)} />
           </Card>
+
+          {(data.sales_order || data.invoice || data.payment_transaction) && (
+            <Card title="ERP traceability">
+              {data.sales_order ? (
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-xs uppercase tracking-wider text-muted-foreground">Sales order</span>
+                  <Link
+                    to="/sales/$orderId"
+                    params={{ orderId: data.sales_order.id }}
+                    className="font-mono text-xs text-primary hover:underline"
+                  >
+                    {data.sales_order.order_number}
+                  </Link>
+                </div>
+              ) : null}
+              {data.invoice ? (
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-xs uppercase tracking-wider text-muted-foreground">Invoice</span>
+                  <Link
+                    to="/invoices/$invoiceId"
+                    params={{ invoiceId: data.invoice.id }}
+                    className="font-mono text-xs text-primary hover:underline"
+                  >
+                    {data.invoice.invoice_number}
+                  </Link>
+                </div>
+              ) : null}
+              {data.payment_transaction ? (
+                <KV
+                  label="Payment tx"
+                  value={`${data.payment_transaction.provider} · ${data.payment_transaction.status}`}
+                />
+              ) : null}
+            </Card>
+          )}
         </div>
       </div>
     </div>

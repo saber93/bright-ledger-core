@@ -6,6 +6,10 @@ export interface RegressionEnv {
   proofPassword: string;
   supabaseUrl: string;
   supabasePublishableKey: string;
+  supabaseServiceRoleKey: string | null;
+  appUrl: string | null;
+  stripeSecretKey: string | null;
+  stripeWebhookSecret: string | null;
   storageKey: string;
 }
 
@@ -66,6 +70,7 @@ export function getRegressionEnv(): RegressionEnv {
   const supabaseUrl = merged.VITE_SUPABASE_URL ?? merged.SUPABASE_URL;
   const supabasePublishableKey =
     merged.VITE_SUPABASE_PUBLISHABLE_KEY ?? merged.SUPABASE_PUBLISHABLE_KEY;
+  const supabaseServiceRoleKey = merged.SUPABASE_SERVICE_ROLE_KEY ?? null;
 
   if (!proofEmail || !proofPassword) {
     throw new Error(
@@ -85,6 +90,10 @@ export function getRegressionEnv(): RegressionEnv {
     proofPassword,
     supabaseUrl,
     supabasePublishableKey,
+    supabaseServiceRoleKey,
+    appUrl: merged.APP_URL ?? null,
+    stripeSecretKey: merged.STRIPE_SECRET_KEY ?? null,
+    stripeWebhookSecret: merged.STRIPE_WEBHOOK_SECRET ?? null,
     storageKey: `sb-${projectRef}-auth-token`,
   };
   return cachedEnv;

@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopStoreSlugRouteImport } from './routes/shop.$storeSlug'
 import { Route as AuthenticatedSuppliersRouteImport } from './routes/_authenticated.suppliers'
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated.store'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
@@ -29,8 +30,20 @@ import { Route as AuthenticatedCustomersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCollectionsRouteImport } from './routes/_authenticated.collections'
 import { Route as AuthenticatedCashSessionsRouteImport } from './routes/_authenticated.cash-sessions'
 import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated.bills'
+import { Route as ShopStoreSlugIndexRouteImport } from './routes/shop.$storeSlug.index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated.settings.index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated.reports.index'
+import { Route as ShopStoreSlugCheckoutRouteImport } from './routes/shop.$storeSlug.checkout'
+import { Route as ShopStoreSlugCartRouteImport } from './routes/shop.$storeSlug.cart'
+import { Route as ShopStoreSlugAccountRouteImport } from './routes/shop.$storeSlug.account'
+import { Route as ApiStorefrontSetupRouteImport } from './routes/api.storefront.setup'
+import { Route as ApiStorefrontProductRouteImport } from './routes/api.storefront.product'
+import { Route as ApiStorefrontPreviewRouteImport } from './routes/api.storefront.preview'
+import { Route as ApiStorefrontDesignRouteImport } from './routes/api.storefront.design'
+import { Route as ApiStorefrontCheckoutContextRouteImport } from './routes/api.storefront.checkout-context'
+import { Route as ApiStorefrontCheckoutRouteImport } from './routes/api.storefront.checkout'
+import { Route as ApiStorefrontCatalogRouteImport } from './routes/api.storefront.catalog'
+import { Route as ApiStorefrontAccountRouteImport } from './routes/api.storefront.account'
 import { Route as ApiCommunicationsSendRouteImport } from './routes/api.communications.send'
 import { Route as ApiCommunicationsRunScheduledRouteImport } from './routes/api.communications.run-scheduled'
 import { Route as ApiCommunicationsRetryRouteImport } from './routes/api.communications.retry'
@@ -38,6 +51,8 @@ import { Route as ApiCommunicationsProcessQueueRouteImport } from './routes/api.
 import { Route as ApiCommunicationsBatchSendRouteImport } from './routes/api.communications.batch-send'
 import { Route as ApiCommunicationsBatchPreviewRouteImport } from './routes/api.communications.batch-preview'
 import { Route as ApiCollectionsDashboardRouteImport } from './routes/api.collections.dashboard'
+import { Route as AuthenticatedStoreSetupRouteImport } from './routes/_authenticated.store.setup'
+import { Route as AuthenticatedStoreDesignRouteImport } from './routes/_authenticated.store.design'
 import { Route as AuthenticatedStoreOrderIdRouteImport } from './routes/_authenticated.store.$orderId'
 import { Route as AuthenticatedSettingsUsersRouteImport } from './routes/_authenticated.settings.users'
 import { Route as AuthenticatedSettingsTaxRatesRouteImport } from './routes/_authenticated.settings.tax-rates'
@@ -62,6 +77,15 @@ import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_
 import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated.bills.$billId'
 import { Route as AuthenticatedAccountingControlsRouteImport } from './routes/_authenticated.accounting.controls'
 import { Route as AuthenticatedAccountingCoaRouteImport } from './routes/_authenticated.accounting.coa'
+import { Route as ShopStoreSlugProductProductKeyRouteImport } from './routes/shop.$storeSlug.product.$productKey'
+import { Route as ShopStoreSlugOrderOrderIdRouteImport } from './routes/shop.$storeSlug.order.$orderId'
+import { Route as ShopStoreSlugCategoryCategoryKeyRouteImport } from './routes/shop.$storeSlug.category.$categoryKey'
+import { Route as ShopStoreSlugAccountAccessRouteImport } from './routes/shop.$storeSlug.account.access'
+import { Route as ApiStorefrontAccountRetryPaymentRouteImport } from './routes/api.storefront.account.retry-payment'
+import { Route as ApiStorefrontAccountPayInvoiceRouteImport } from './routes/api.storefront.account.pay-invoice'
+import { Route as ApiStorefrontAccountOrderRouteImport } from './routes/api.storefront.account.order'
+import { Route as ApiStorefrontAccountDocumentRouteImport } from './routes/api.storefront.account.document'
+import { Route as ApiStorefrontAccountAccessRouteImport } from './routes/api.storefront.account.access'
 import { Route as ApiDocumentsQuickExpenseIdRouteImport } from './routes/api.documents.quick-expense.$id'
 import { Route as ApiDocumentsPosReceiptIdRouteImport } from './routes/api.documents.pos-receipt.$id'
 import { Route as ApiDocumentsInvoiceIdRouteImport } from './routes/api.documents.invoice.$id'
@@ -70,6 +94,7 @@ import { Route as ApiDocumentsCreditNoteIdRouteImport } from './routes/api.docum
 import { Route as ApiDocumentsCashSessionIdRouteImport } from './routes/api.documents.cash-session.$id'
 import { Route as ApiDocumentsBillIdRouteImport } from './routes/api.documents.bill.$id'
 import { Route as ApiCommunicationsWebhooksResendRouteImport } from './routes/api.communications.webhooks.resend'
+import { Route as ApiStorefrontPaymentsWebhooksStripeRouteImport } from './routes/api.storefront.payments.webhooks.stripe'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -88,6 +113,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopStoreSlugRoute = ShopStoreSlugRouteImport.update({
+  id: '/shop/$storeSlug',
+  path: '/shop/$storeSlug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSuppliersRoute = AuthenticatedSuppliersRouteImport.update({
@@ -173,6 +203,11 @@ const AuthenticatedBillsRoute = AuthenticatedBillsRouteImport.update({
   path: '/bills',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ShopStoreSlugIndexRoute = ShopStoreSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopStoreSlugRoute,
+} as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/',
@@ -185,6 +220,62 @@ const AuthenticatedReportsIndexRoute =
     path: '/reports/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ShopStoreSlugCheckoutRoute = ShopStoreSlugCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => ShopStoreSlugRoute,
+} as any)
+const ShopStoreSlugCartRoute = ShopStoreSlugCartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => ShopStoreSlugRoute,
+} as any)
+const ShopStoreSlugAccountRoute = ShopStoreSlugAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => ShopStoreSlugRoute,
+} as any)
+const ApiStorefrontSetupRoute = ApiStorefrontSetupRouteImport.update({
+  id: '/api/storefront/setup',
+  path: '/api/storefront/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontProductRoute = ApiStorefrontProductRouteImport.update({
+  id: '/api/storefront/product',
+  path: '/api/storefront/product',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontPreviewRoute = ApiStorefrontPreviewRouteImport.update({
+  id: '/api/storefront/preview',
+  path: '/api/storefront/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontDesignRoute = ApiStorefrontDesignRouteImport.update({
+  id: '/api/storefront/design',
+  path: '/api/storefront/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontCheckoutContextRoute =
+  ApiStorefrontCheckoutContextRouteImport.update({
+    id: '/api/storefront/checkout-context',
+    path: '/api/storefront/checkout-context',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiStorefrontCheckoutRoute = ApiStorefrontCheckoutRouteImport.update({
+  id: '/api/storefront/checkout',
+  path: '/api/storefront/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontCatalogRoute = ApiStorefrontCatalogRouteImport.update({
+  id: '/api/storefront/catalog',
+  path: '/api/storefront/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontAccountRoute = ApiStorefrontAccountRouteImport.update({
+  id: '/api/storefront/account',
+  path: '/api/storefront/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCommunicationsSendRoute = ApiCommunicationsSendRouteImport.update({
   id: '/api/communications/send',
   path: '/api/communications/send',
@@ -224,6 +315,17 @@ const ApiCollectionsDashboardRoute = ApiCollectionsDashboardRouteImport.update({
   path: '/api/collections/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedStoreSetupRoute = AuthenticatedStoreSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => AuthenticatedStoreRoute,
+} as any)
+const AuthenticatedStoreDesignRoute =
+  AuthenticatedStoreDesignRouteImport.update({
+    id: '/design',
+    path: '/design',
+    getParentRoute: () => AuthenticatedStoreRoute,
+  } as any)
 const AuthenticatedStoreOrderIdRoute =
   AuthenticatedStoreOrderIdRouteImport.update({
     id: '/$orderId',
@@ -367,6 +469,60 @@ const AuthenticatedAccountingCoaRoute =
     path: '/accounting/coa',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ShopStoreSlugProductProductKeyRoute =
+  ShopStoreSlugProductProductKeyRouteImport.update({
+    id: '/product/$productKey',
+    path: '/product/$productKey',
+    getParentRoute: () => ShopStoreSlugRoute,
+  } as any)
+const ShopStoreSlugOrderOrderIdRoute =
+  ShopStoreSlugOrderOrderIdRouteImport.update({
+    id: '/order/$orderId',
+    path: '/order/$orderId',
+    getParentRoute: () => ShopStoreSlugRoute,
+  } as any)
+const ShopStoreSlugCategoryCategoryKeyRoute =
+  ShopStoreSlugCategoryCategoryKeyRouteImport.update({
+    id: '/category/$categoryKey',
+    path: '/category/$categoryKey',
+    getParentRoute: () => ShopStoreSlugRoute,
+  } as any)
+const ShopStoreSlugAccountAccessRoute =
+  ShopStoreSlugAccountAccessRouteImport.update({
+    id: '/access',
+    path: '/access',
+    getParentRoute: () => ShopStoreSlugAccountRoute,
+  } as any)
+const ApiStorefrontAccountRetryPaymentRoute =
+  ApiStorefrontAccountRetryPaymentRouteImport.update({
+    id: '/retry-payment',
+    path: '/retry-payment',
+    getParentRoute: () => ApiStorefrontAccountRoute,
+  } as any)
+const ApiStorefrontAccountPayInvoiceRoute =
+  ApiStorefrontAccountPayInvoiceRouteImport.update({
+    id: '/pay-invoice',
+    path: '/pay-invoice',
+    getParentRoute: () => ApiStorefrontAccountRoute,
+  } as any)
+const ApiStorefrontAccountOrderRoute =
+  ApiStorefrontAccountOrderRouteImport.update({
+    id: '/order',
+    path: '/order',
+    getParentRoute: () => ApiStorefrontAccountRoute,
+  } as any)
+const ApiStorefrontAccountDocumentRoute =
+  ApiStorefrontAccountDocumentRouteImport.update({
+    id: '/document',
+    path: '/document',
+    getParentRoute: () => ApiStorefrontAccountRoute,
+  } as any)
+const ApiStorefrontAccountAccessRoute =
+  ApiStorefrontAccountAccessRouteImport.update({
+    id: '/access',
+    path: '/access',
+    getParentRoute: () => ApiStorefrontAccountRoute,
+  } as any)
 const ApiDocumentsQuickExpenseIdRoute =
   ApiDocumentsQuickExpenseIdRouteImport.update({
     id: '/api/documents/quick-expense/$id',
@@ -413,6 +569,12 @@ const ApiCommunicationsWebhooksResendRoute =
     path: '/api/communications/webhooks/resend',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiStorefrontPaymentsWebhooksStripeRoute =
+  ApiStorefrontPaymentsWebhooksStripeRouteImport.update({
+    id: '/api/storefront/payments/webhooks/stripe',
+    path: '/api/storefront/payments/webhooks/stripe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -434,6 +596,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
+  '/shop/$storeSlug': typeof ShopStoreSlugRouteWithChildren
   '/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/accounting/controls': typeof AuthenticatedAccountingControlsRoute
   '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
@@ -458,6 +621,8 @@ export interface FileRoutesByFullPath {
   '/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/store/design': typeof AuthenticatedStoreDesignRoute
+  '/store/setup': typeof AuthenticatedStoreSetupRoute
   '/api/collections/dashboard': typeof ApiCollectionsDashboardRoute
   '/api/communications/batch-preview': typeof ApiCommunicationsBatchPreviewRoute
   '/api/communications/batch-send': typeof ApiCommunicationsBatchSendRoute
@@ -465,8 +630,20 @@ export interface FileRoutesByFullPath {
   '/api/communications/retry': typeof ApiCommunicationsRetryRoute
   '/api/communications/run-scheduled': typeof ApiCommunicationsRunScheduledRoute
   '/api/communications/send': typeof ApiCommunicationsSendRoute
+  '/api/storefront/account': typeof ApiStorefrontAccountRouteWithChildren
+  '/api/storefront/catalog': typeof ApiStorefrontCatalogRoute
+  '/api/storefront/checkout': typeof ApiStorefrontCheckoutRoute
+  '/api/storefront/checkout-context': typeof ApiStorefrontCheckoutContextRoute
+  '/api/storefront/design': typeof ApiStorefrontDesignRoute
+  '/api/storefront/preview': typeof ApiStorefrontPreviewRoute
+  '/api/storefront/product': typeof ApiStorefrontProductRoute
+  '/api/storefront/setup': typeof ApiStorefrontSetupRoute
+  '/shop/$storeSlug/account': typeof ShopStoreSlugAccountRouteWithChildren
+  '/shop/$storeSlug/cart': typeof ShopStoreSlugCartRoute
+  '/shop/$storeSlug/checkout': typeof ShopStoreSlugCheckoutRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/shop/$storeSlug/': typeof ShopStoreSlugIndexRoute
   '/api/communications/webhooks/resend': typeof ApiCommunicationsWebhooksResendRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
@@ -475,6 +652,16 @@ export interface FileRoutesByFullPath {
   '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
   '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
+  '/api/storefront/account/access': typeof ApiStorefrontAccountAccessRoute
+  '/api/storefront/account/document': typeof ApiStorefrontAccountDocumentRoute
+  '/api/storefront/account/order': typeof ApiStorefrontAccountOrderRoute
+  '/api/storefront/account/pay-invoice': typeof ApiStorefrontAccountPayInvoiceRoute
+  '/api/storefront/account/retry-payment': typeof ApiStorefrontAccountRetryPaymentRoute
+  '/shop/$storeSlug/account/access': typeof ShopStoreSlugAccountAccessRoute
+  '/shop/$storeSlug/category/$categoryKey': typeof ShopStoreSlugCategoryCategoryKeyRoute
+  '/shop/$storeSlug/order/$orderId': typeof ShopStoreSlugOrderOrderIdRoute
+  '/shop/$storeSlug/product/$productKey': typeof ShopStoreSlugProductProductKeyRoute
+  '/api/storefront/payments/webhooks/stripe': typeof ApiStorefrontPaymentsWebhooksStripeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -519,6 +706,8 @@ export interface FileRoutesByTo {
   '/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/store/design': typeof AuthenticatedStoreDesignRoute
+  '/store/setup': typeof AuthenticatedStoreSetupRoute
   '/api/collections/dashboard': typeof ApiCollectionsDashboardRoute
   '/api/communications/batch-preview': typeof ApiCommunicationsBatchPreviewRoute
   '/api/communications/batch-send': typeof ApiCommunicationsBatchSendRoute
@@ -526,8 +715,20 @@ export interface FileRoutesByTo {
   '/api/communications/retry': typeof ApiCommunicationsRetryRoute
   '/api/communications/run-scheduled': typeof ApiCommunicationsRunScheduledRoute
   '/api/communications/send': typeof ApiCommunicationsSendRoute
+  '/api/storefront/account': typeof ApiStorefrontAccountRouteWithChildren
+  '/api/storefront/catalog': typeof ApiStorefrontCatalogRoute
+  '/api/storefront/checkout': typeof ApiStorefrontCheckoutRoute
+  '/api/storefront/checkout-context': typeof ApiStorefrontCheckoutContextRoute
+  '/api/storefront/design': typeof ApiStorefrontDesignRoute
+  '/api/storefront/preview': typeof ApiStorefrontPreviewRoute
+  '/api/storefront/product': typeof ApiStorefrontProductRoute
+  '/api/storefront/setup': typeof ApiStorefrontSetupRoute
+  '/shop/$storeSlug/account': typeof ShopStoreSlugAccountRouteWithChildren
+  '/shop/$storeSlug/cart': typeof ShopStoreSlugCartRoute
+  '/shop/$storeSlug/checkout': typeof ShopStoreSlugCheckoutRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/shop/$storeSlug': typeof ShopStoreSlugIndexRoute
   '/api/communications/webhooks/resend': typeof ApiCommunicationsWebhooksResendRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
@@ -536,6 +737,16 @@ export interface FileRoutesByTo {
   '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
   '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
+  '/api/storefront/account/access': typeof ApiStorefrontAccountAccessRoute
+  '/api/storefront/account/document': typeof ApiStorefrontAccountDocumentRoute
+  '/api/storefront/account/order': typeof ApiStorefrontAccountOrderRoute
+  '/api/storefront/account/pay-invoice': typeof ApiStorefrontAccountPayInvoiceRoute
+  '/api/storefront/account/retry-payment': typeof ApiStorefrontAccountRetryPaymentRoute
+  '/shop/$storeSlug/account/access': typeof ShopStoreSlugAccountAccessRoute
+  '/shop/$storeSlug/category/$categoryKey': typeof ShopStoreSlugCategoryCategoryKeyRoute
+  '/shop/$storeSlug/order/$orderId': typeof ShopStoreSlugOrderOrderIdRoute
+  '/shop/$storeSlug/product/$productKey': typeof ShopStoreSlugProductProductKeyRoute
+  '/api/storefront/payments/webhooks/stripe': typeof ApiStorefrontPaymentsWebhooksStripeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -559,6 +770,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/store': typeof AuthenticatedStoreRouteWithChildren
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
+  '/shop/$storeSlug': typeof ShopStoreSlugRouteWithChildren
   '/_authenticated/accounting/coa': typeof AuthenticatedAccountingCoaRoute
   '/_authenticated/accounting/controls': typeof AuthenticatedAccountingControlsRoute
   '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
@@ -583,6 +795,8 @@ export interface FileRoutesById {
   '/_authenticated/settings/tax-rates': typeof AuthenticatedSettingsTaxRatesRoute
   '/_authenticated/settings/users': typeof AuthenticatedSettingsUsersRoute
   '/_authenticated/store/$orderId': typeof AuthenticatedStoreOrderIdRoute
+  '/_authenticated/store/design': typeof AuthenticatedStoreDesignRoute
+  '/_authenticated/store/setup': typeof AuthenticatedStoreSetupRoute
   '/api/collections/dashboard': typeof ApiCollectionsDashboardRoute
   '/api/communications/batch-preview': typeof ApiCommunicationsBatchPreviewRoute
   '/api/communications/batch-send': typeof ApiCommunicationsBatchSendRoute
@@ -590,8 +804,20 @@ export interface FileRoutesById {
   '/api/communications/retry': typeof ApiCommunicationsRetryRoute
   '/api/communications/run-scheduled': typeof ApiCommunicationsRunScheduledRoute
   '/api/communications/send': typeof ApiCommunicationsSendRoute
+  '/api/storefront/account': typeof ApiStorefrontAccountRouteWithChildren
+  '/api/storefront/catalog': typeof ApiStorefrontCatalogRoute
+  '/api/storefront/checkout': typeof ApiStorefrontCheckoutRoute
+  '/api/storefront/checkout-context': typeof ApiStorefrontCheckoutContextRoute
+  '/api/storefront/design': typeof ApiStorefrontDesignRoute
+  '/api/storefront/preview': typeof ApiStorefrontPreviewRoute
+  '/api/storefront/product': typeof ApiStorefrontProductRoute
+  '/api/storefront/setup': typeof ApiStorefrontSetupRoute
+  '/shop/$storeSlug/account': typeof ShopStoreSlugAccountRouteWithChildren
+  '/shop/$storeSlug/cart': typeof ShopStoreSlugCartRoute
+  '/shop/$storeSlug/checkout': typeof ShopStoreSlugCheckoutRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/shop/$storeSlug/': typeof ShopStoreSlugIndexRoute
   '/api/communications/webhooks/resend': typeof ApiCommunicationsWebhooksResendRoute
   '/api/documents/bill/$id': typeof ApiDocumentsBillIdRoute
   '/api/documents/cash-session/$id': typeof ApiDocumentsCashSessionIdRoute
@@ -600,6 +826,16 @@ export interface FileRoutesById {
   '/api/documents/invoice/$id': typeof ApiDocumentsInvoiceIdRoute
   '/api/documents/pos-receipt/$id': typeof ApiDocumentsPosReceiptIdRoute
   '/api/documents/quick-expense/$id': typeof ApiDocumentsQuickExpenseIdRoute
+  '/api/storefront/account/access': typeof ApiStorefrontAccountAccessRoute
+  '/api/storefront/account/document': typeof ApiStorefrontAccountDocumentRoute
+  '/api/storefront/account/order': typeof ApiStorefrontAccountOrderRoute
+  '/api/storefront/account/pay-invoice': typeof ApiStorefrontAccountPayInvoiceRoute
+  '/api/storefront/account/retry-payment': typeof ApiStorefrontAccountRetryPaymentRoute
+  '/shop/$storeSlug/account/access': typeof ShopStoreSlugAccountAccessRoute
+  '/shop/$storeSlug/category/$categoryKey': typeof ShopStoreSlugCategoryCategoryKeyRoute
+  '/shop/$storeSlug/order/$orderId': typeof ShopStoreSlugOrderOrderIdRoute
+  '/shop/$storeSlug/product/$productKey': typeof ShopStoreSlugProductProductKeyRoute
+  '/api/storefront/payments/webhooks/stripe': typeof ApiStorefrontPaymentsWebhooksStripeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -623,6 +859,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/store'
     | '/suppliers'
+    | '/shop/$storeSlug'
     | '/accounting/coa'
     | '/accounting/controls'
     | '/bills/$billId'
@@ -647,6 +884,8 @@ export interface FileRouteTypes {
     | '/settings/tax-rates'
     | '/settings/users'
     | '/store/$orderId'
+    | '/store/design'
+    | '/store/setup'
     | '/api/collections/dashboard'
     | '/api/communications/batch-preview'
     | '/api/communications/batch-send'
@@ -654,8 +893,20 @@ export interface FileRouteTypes {
     | '/api/communications/retry'
     | '/api/communications/run-scheduled'
     | '/api/communications/send'
+    | '/api/storefront/account'
+    | '/api/storefront/catalog'
+    | '/api/storefront/checkout'
+    | '/api/storefront/checkout-context'
+    | '/api/storefront/design'
+    | '/api/storefront/preview'
+    | '/api/storefront/product'
+    | '/api/storefront/setup'
+    | '/shop/$storeSlug/account'
+    | '/shop/$storeSlug/cart'
+    | '/shop/$storeSlug/checkout'
     | '/reports/'
     | '/settings/'
+    | '/shop/$storeSlug/'
     | '/api/communications/webhooks/resend'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
@@ -664,6 +915,16 @@ export interface FileRouteTypes {
     | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
     | '/api/documents/quick-expense/$id'
+    | '/api/storefront/account/access'
+    | '/api/storefront/account/document'
+    | '/api/storefront/account/order'
+    | '/api/storefront/account/pay-invoice'
+    | '/api/storefront/account/retry-payment'
+    | '/shop/$storeSlug/account/access'
+    | '/shop/$storeSlug/category/$categoryKey'
+    | '/shop/$storeSlug/order/$orderId'
+    | '/shop/$storeSlug/product/$productKey'
+    | '/api/storefront/payments/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -708,6 +969,8 @@ export interface FileRouteTypes {
     | '/settings/tax-rates'
     | '/settings/users'
     | '/store/$orderId'
+    | '/store/design'
+    | '/store/setup'
     | '/api/collections/dashboard'
     | '/api/communications/batch-preview'
     | '/api/communications/batch-send'
@@ -715,8 +978,20 @@ export interface FileRouteTypes {
     | '/api/communications/retry'
     | '/api/communications/run-scheduled'
     | '/api/communications/send'
+    | '/api/storefront/account'
+    | '/api/storefront/catalog'
+    | '/api/storefront/checkout'
+    | '/api/storefront/checkout-context'
+    | '/api/storefront/design'
+    | '/api/storefront/preview'
+    | '/api/storefront/product'
+    | '/api/storefront/setup'
+    | '/shop/$storeSlug/account'
+    | '/shop/$storeSlug/cart'
+    | '/shop/$storeSlug/checkout'
     | '/reports'
     | '/settings'
+    | '/shop/$storeSlug'
     | '/api/communications/webhooks/resend'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
@@ -725,6 +1000,16 @@ export interface FileRouteTypes {
     | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
     | '/api/documents/quick-expense/$id'
+    | '/api/storefront/account/access'
+    | '/api/storefront/account/document'
+    | '/api/storefront/account/order'
+    | '/api/storefront/account/pay-invoice'
+    | '/api/storefront/account/retry-payment'
+    | '/shop/$storeSlug/account/access'
+    | '/shop/$storeSlug/category/$categoryKey'
+    | '/shop/$storeSlug/order/$orderId'
+    | '/shop/$storeSlug/product/$productKey'
+    | '/api/storefront/payments/webhooks/stripe'
   id:
     | '__root__'
     | '/'
@@ -747,6 +1032,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/store'
     | '/_authenticated/suppliers'
+    | '/shop/$storeSlug'
     | '/_authenticated/accounting/coa'
     | '/_authenticated/accounting/controls'
     | '/_authenticated/bills/$billId'
@@ -771,6 +1057,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/tax-rates'
     | '/_authenticated/settings/users'
     | '/_authenticated/store/$orderId'
+    | '/_authenticated/store/design'
+    | '/_authenticated/store/setup'
     | '/api/collections/dashboard'
     | '/api/communications/batch-preview'
     | '/api/communications/batch-send'
@@ -778,8 +1066,20 @@ export interface FileRouteTypes {
     | '/api/communications/retry'
     | '/api/communications/run-scheduled'
     | '/api/communications/send'
+    | '/api/storefront/account'
+    | '/api/storefront/catalog'
+    | '/api/storefront/checkout'
+    | '/api/storefront/checkout-context'
+    | '/api/storefront/design'
+    | '/api/storefront/preview'
+    | '/api/storefront/product'
+    | '/api/storefront/setup'
+    | '/shop/$storeSlug/account'
+    | '/shop/$storeSlug/cart'
+    | '/shop/$storeSlug/checkout'
     | '/_authenticated/reports/'
     | '/_authenticated/settings/'
+    | '/shop/$storeSlug/'
     | '/api/communications/webhooks/resend'
     | '/api/documents/bill/$id'
     | '/api/documents/cash-session/$id'
@@ -788,6 +1088,16 @@ export interface FileRouteTypes {
     | '/api/documents/invoice/$id'
     | '/api/documents/pos-receipt/$id'
     | '/api/documents/quick-expense/$id'
+    | '/api/storefront/account/access'
+    | '/api/storefront/account/document'
+    | '/api/storefront/account/order'
+    | '/api/storefront/account/pay-invoice'
+    | '/api/storefront/account/retry-payment'
+    | '/shop/$storeSlug/account/access'
+    | '/shop/$storeSlug/category/$categoryKey'
+    | '/shop/$storeSlug/order/$orderId'
+    | '/shop/$storeSlug/product/$productKey'
+    | '/api/storefront/payments/webhooks/stripe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -795,6 +1105,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ShopStoreSlugRoute: typeof ShopStoreSlugRouteWithChildren
   ApiCollectionsDashboardRoute: typeof ApiCollectionsDashboardRoute
   ApiCommunicationsBatchPreviewRoute: typeof ApiCommunicationsBatchPreviewRoute
   ApiCommunicationsBatchSendRoute: typeof ApiCommunicationsBatchSendRoute
@@ -802,6 +1113,14 @@ export interface RootRouteChildren {
   ApiCommunicationsRetryRoute: typeof ApiCommunicationsRetryRoute
   ApiCommunicationsRunScheduledRoute: typeof ApiCommunicationsRunScheduledRoute
   ApiCommunicationsSendRoute: typeof ApiCommunicationsSendRoute
+  ApiStorefrontAccountRoute: typeof ApiStorefrontAccountRouteWithChildren
+  ApiStorefrontCatalogRoute: typeof ApiStorefrontCatalogRoute
+  ApiStorefrontCheckoutRoute: typeof ApiStorefrontCheckoutRoute
+  ApiStorefrontCheckoutContextRoute: typeof ApiStorefrontCheckoutContextRoute
+  ApiStorefrontDesignRoute: typeof ApiStorefrontDesignRoute
+  ApiStorefrontPreviewRoute: typeof ApiStorefrontPreviewRoute
+  ApiStorefrontProductRoute: typeof ApiStorefrontProductRoute
+  ApiStorefrontSetupRoute: typeof ApiStorefrontSetupRoute
   ApiCommunicationsWebhooksResendRoute: typeof ApiCommunicationsWebhooksResendRoute
   ApiDocumentsBillIdRoute: typeof ApiDocumentsBillIdRoute
   ApiDocumentsCashSessionIdRoute: typeof ApiDocumentsCashSessionIdRoute
@@ -810,6 +1129,7 @@ export interface RootRouteChildren {
   ApiDocumentsInvoiceIdRoute: typeof ApiDocumentsInvoiceIdRoute
   ApiDocumentsPosReceiptIdRoute: typeof ApiDocumentsPosReceiptIdRoute
   ApiDocumentsQuickExpenseIdRoute: typeof ApiDocumentsQuickExpenseIdRoute
+  ApiStorefrontPaymentsWebhooksStripeRoute: typeof ApiStorefrontPaymentsWebhooksStripeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -840,6 +1160,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop/$storeSlug': {
+      id: '/shop/$storeSlug'
+      path: '/shop/$storeSlug'
+      fullPath: '/shop/$storeSlug'
+      preLoaderRoute: typeof ShopStoreSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/suppliers': {
@@ -954,6 +1281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/shop/$storeSlug/': {
+      id: '/shop/$storeSlug/'
+      path: '/'
+      fullPath: '/shop/$storeSlug/'
+      preLoaderRoute: typeof ShopStoreSlugIndexRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/'
@@ -967,6 +1301,83 @@ declare module '@tanstack/react-router' {
       fullPath: '/reports/'
       preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/shop/$storeSlug/checkout': {
+      id: '/shop/$storeSlug/checkout'
+      path: '/checkout'
+      fullPath: '/shop/$storeSlug/checkout'
+      preLoaderRoute: typeof ShopStoreSlugCheckoutRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
+    '/shop/$storeSlug/cart': {
+      id: '/shop/$storeSlug/cart'
+      path: '/cart'
+      fullPath: '/shop/$storeSlug/cart'
+      preLoaderRoute: typeof ShopStoreSlugCartRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
+    '/shop/$storeSlug/account': {
+      id: '/shop/$storeSlug/account'
+      path: '/account'
+      fullPath: '/shop/$storeSlug/account'
+      preLoaderRoute: typeof ShopStoreSlugAccountRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
+    '/api/storefront/setup': {
+      id: '/api/storefront/setup'
+      path: '/api/storefront/setup'
+      fullPath: '/api/storefront/setup'
+      preLoaderRoute: typeof ApiStorefrontSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/product': {
+      id: '/api/storefront/product'
+      path: '/api/storefront/product'
+      fullPath: '/api/storefront/product'
+      preLoaderRoute: typeof ApiStorefrontProductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/preview': {
+      id: '/api/storefront/preview'
+      path: '/api/storefront/preview'
+      fullPath: '/api/storefront/preview'
+      preLoaderRoute: typeof ApiStorefrontPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/design': {
+      id: '/api/storefront/design'
+      path: '/api/storefront/design'
+      fullPath: '/api/storefront/design'
+      preLoaderRoute: typeof ApiStorefrontDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/checkout-context': {
+      id: '/api/storefront/checkout-context'
+      path: '/api/storefront/checkout-context'
+      fullPath: '/api/storefront/checkout-context'
+      preLoaderRoute: typeof ApiStorefrontCheckoutContextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/checkout': {
+      id: '/api/storefront/checkout'
+      path: '/api/storefront/checkout'
+      fullPath: '/api/storefront/checkout'
+      preLoaderRoute: typeof ApiStorefrontCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/catalog': {
+      id: '/api/storefront/catalog'
+      path: '/api/storefront/catalog'
+      fullPath: '/api/storefront/catalog'
+      preLoaderRoute: typeof ApiStorefrontCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/account': {
+      id: '/api/storefront/account'
+      path: '/api/storefront/account'
+      fullPath: '/api/storefront/account'
+      preLoaderRoute: typeof ApiStorefrontAccountRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/communications/send': {
       id: '/api/communications/send'
@@ -1016,6 +1427,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/collections/dashboard'
       preLoaderRoute: typeof ApiCollectionsDashboardRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/store/setup': {
+      id: '/_authenticated/store/setup'
+      path: '/setup'
+      fullPath: '/store/setup'
+      preLoaderRoute: typeof AuthenticatedStoreSetupRouteImport
+      parentRoute: typeof AuthenticatedStoreRoute
+    }
+    '/_authenticated/store/design': {
+      id: '/_authenticated/store/design'
+      path: '/design'
+      fullPath: '/store/design'
+      preLoaderRoute: typeof AuthenticatedStoreDesignRouteImport
+      parentRoute: typeof AuthenticatedStoreRoute
     }
     '/_authenticated/store/$orderId': {
       id: '/_authenticated/store/$orderId'
@@ -1185,6 +1610,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountingCoaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/shop/$storeSlug/product/$productKey': {
+      id: '/shop/$storeSlug/product/$productKey'
+      path: '/product/$productKey'
+      fullPath: '/shop/$storeSlug/product/$productKey'
+      preLoaderRoute: typeof ShopStoreSlugProductProductKeyRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
+    '/shop/$storeSlug/order/$orderId': {
+      id: '/shop/$storeSlug/order/$orderId'
+      path: '/order/$orderId'
+      fullPath: '/shop/$storeSlug/order/$orderId'
+      preLoaderRoute: typeof ShopStoreSlugOrderOrderIdRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
+    '/shop/$storeSlug/category/$categoryKey': {
+      id: '/shop/$storeSlug/category/$categoryKey'
+      path: '/category/$categoryKey'
+      fullPath: '/shop/$storeSlug/category/$categoryKey'
+      preLoaderRoute: typeof ShopStoreSlugCategoryCategoryKeyRouteImport
+      parentRoute: typeof ShopStoreSlugRoute
+    }
+    '/shop/$storeSlug/account/access': {
+      id: '/shop/$storeSlug/account/access'
+      path: '/access'
+      fullPath: '/shop/$storeSlug/account/access'
+      preLoaderRoute: typeof ShopStoreSlugAccountAccessRouteImport
+      parentRoute: typeof ShopStoreSlugAccountRoute
+    }
+    '/api/storefront/account/retry-payment': {
+      id: '/api/storefront/account/retry-payment'
+      path: '/retry-payment'
+      fullPath: '/api/storefront/account/retry-payment'
+      preLoaderRoute: typeof ApiStorefrontAccountRetryPaymentRouteImport
+      parentRoute: typeof ApiStorefrontAccountRoute
+    }
+    '/api/storefront/account/pay-invoice': {
+      id: '/api/storefront/account/pay-invoice'
+      path: '/pay-invoice'
+      fullPath: '/api/storefront/account/pay-invoice'
+      preLoaderRoute: typeof ApiStorefrontAccountPayInvoiceRouteImport
+      parentRoute: typeof ApiStorefrontAccountRoute
+    }
+    '/api/storefront/account/order': {
+      id: '/api/storefront/account/order'
+      path: '/order'
+      fullPath: '/api/storefront/account/order'
+      preLoaderRoute: typeof ApiStorefrontAccountOrderRouteImport
+      parentRoute: typeof ApiStorefrontAccountRoute
+    }
+    '/api/storefront/account/document': {
+      id: '/api/storefront/account/document'
+      path: '/document'
+      fullPath: '/api/storefront/account/document'
+      preLoaderRoute: typeof ApiStorefrontAccountDocumentRouteImport
+      parentRoute: typeof ApiStorefrontAccountRoute
+    }
+    '/api/storefront/account/access': {
+      id: '/api/storefront/account/access'
+      path: '/access'
+      fullPath: '/api/storefront/account/access'
+      preLoaderRoute: typeof ApiStorefrontAccountAccessRouteImport
+      parentRoute: typeof ApiStorefrontAccountRoute
+    }
     '/api/documents/quick-expense/$id': {
       id: '/api/documents/quick-expense/$id'
       path: '/api/documents/quick-expense/$id'
@@ -1239,6 +1727,13 @@ declare module '@tanstack/react-router' {
       path: '/api/communications/webhooks/resend'
       fullPath: '/api/communications/webhooks/resend'
       preLoaderRoute: typeof ApiCommunicationsWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/payments/webhooks/stripe': {
+      id: '/api/storefront/payments/webhooks/stripe'
+      path: '/api/storefront/payments/webhooks/stripe'
+      fullPath: '/api/storefront/payments/webhooks/stripe'
+      preLoaderRoute: typeof ApiStorefrontPaymentsWebhooksStripeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1376,10 +1871,14 @@ const AuthenticatedSettingsRouteWithChildren =
 
 interface AuthenticatedStoreRouteChildren {
   AuthenticatedStoreOrderIdRoute: typeof AuthenticatedStoreOrderIdRoute
+  AuthenticatedStoreDesignRoute: typeof AuthenticatedStoreDesignRoute
+  AuthenticatedStoreSetupRoute: typeof AuthenticatedStoreSetupRoute
 }
 
 const AuthenticatedStoreRouteChildren: AuthenticatedStoreRouteChildren = {
   AuthenticatedStoreOrderIdRoute: AuthenticatedStoreOrderIdRoute,
+  AuthenticatedStoreDesignRoute: AuthenticatedStoreDesignRoute,
+  AuthenticatedStoreSetupRoute: AuthenticatedStoreSetupRoute,
 }
 
 const AuthenticatedStoreRouteWithChildren =
@@ -1447,11 +1946,66 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ShopStoreSlugAccountRouteChildren {
+  ShopStoreSlugAccountAccessRoute: typeof ShopStoreSlugAccountAccessRoute
+}
+
+const ShopStoreSlugAccountRouteChildren: ShopStoreSlugAccountRouteChildren = {
+  ShopStoreSlugAccountAccessRoute: ShopStoreSlugAccountAccessRoute,
+}
+
+const ShopStoreSlugAccountRouteWithChildren =
+  ShopStoreSlugAccountRoute._addFileChildren(ShopStoreSlugAccountRouteChildren)
+
+interface ShopStoreSlugRouteChildren {
+  ShopStoreSlugAccountRoute: typeof ShopStoreSlugAccountRouteWithChildren
+  ShopStoreSlugCartRoute: typeof ShopStoreSlugCartRoute
+  ShopStoreSlugCheckoutRoute: typeof ShopStoreSlugCheckoutRoute
+  ShopStoreSlugIndexRoute: typeof ShopStoreSlugIndexRoute
+  ShopStoreSlugCategoryCategoryKeyRoute: typeof ShopStoreSlugCategoryCategoryKeyRoute
+  ShopStoreSlugOrderOrderIdRoute: typeof ShopStoreSlugOrderOrderIdRoute
+  ShopStoreSlugProductProductKeyRoute: typeof ShopStoreSlugProductProductKeyRoute
+}
+
+const ShopStoreSlugRouteChildren: ShopStoreSlugRouteChildren = {
+  ShopStoreSlugAccountRoute: ShopStoreSlugAccountRouteWithChildren,
+  ShopStoreSlugCartRoute: ShopStoreSlugCartRoute,
+  ShopStoreSlugCheckoutRoute: ShopStoreSlugCheckoutRoute,
+  ShopStoreSlugIndexRoute: ShopStoreSlugIndexRoute,
+  ShopStoreSlugCategoryCategoryKeyRoute: ShopStoreSlugCategoryCategoryKeyRoute,
+  ShopStoreSlugOrderOrderIdRoute: ShopStoreSlugOrderOrderIdRoute,
+  ShopStoreSlugProductProductKeyRoute: ShopStoreSlugProductProductKeyRoute,
+}
+
+const ShopStoreSlugRouteWithChildren = ShopStoreSlugRoute._addFileChildren(
+  ShopStoreSlugRouteChildren,
+)
+
+interface ApiStorefrontAccountRouteChildren {
+  ApiStorefrontAccountAccessRoute: typeof ApiStorefrontAccountAccessRoute
+  ApiStorefrontAccountDocumentRoute: typeof ApiStorefrontAccountDocumentRoute
+  ApiStorefrontAccountOrderRoute: typeof ApiStorefrontAccountOrderRoute
+  ApiStorefrontAccountPayInvoiceRoute: typeof ApiStorefrontAccountPayInvoiceRoute
+  ApiStorefrontAccountRetryPaymentRoute: typeof ApiStorefrontAccountRetryPaymentRoute
+}
+
+const ApiStorefrontAccountRouteChildren: ApiStorefrontAccountRouteChildren = {
+  ApiStorefrontAccountAccessRoute: ApiStorefrontAccountAccessRoute,
+  ApiStorefrontAccountDocumentRoute: ApiStorefrontAccountDocumentRoute,
+  ApiStorefrontAccountOrderRoute: ApiStorefrontAccountOrderRoute,
+  ApiStorefrontAccountPayInvoiceRoute: ApiStorefrontAccountPayInvoiceRoute,
+  ApiStorefrontAccountRetryPaymentRoute: ApiStorefrontAccountRetryPaymentRoute,
+}
+
+const ApiStorefrontAccountRouteWithChildren =
+  ApiStorefrontAccountRoute._addFileChildren(ApiStorefrontAccountRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ShopStoreSlugRoute: ShopStoreSlugRouteWithChildren,
   ApiCollectionsDashboardRoute: ApiCollectionsDashboardRoute,
   ApiCommunicationsBatchPreviewRoute: ApiCommunicationsBatchPreviewRoute,
   ApiCommunicationsBatchSendRoute: ApiCommunicationsBatchSendRoute,
@@ -1459,6 +2013,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCommunicationsRetryRoute: ApiCommunicationsRetryRoute,
   ApiCommunicationsRunScheduledRoute: ApiCommunicationsRunScheduledRoute,
   ApiCommunicationsSendRoute: ApiCommunicationsSendRoute,
+  ApiStorefrontAccountRoute: ApiStorefrontAccountRouteWithChildren,
+  ApiStorefrontCatalogRoute: ApiStorefrontCatalogRoute,
+  ApiStorefrontCheckoutRoute: ApiStorefrontCheckoutRoute,
+  ApiStorefrontCheckoutContextRoute: ApiStorefrontCheckoutContextRoute,
+  ApiStorefrontDesignRoute: ApiStorefrontDesignRoute,
+  ApiStorefrontPreviewRoute: ApiStorefrontPreviewRoute,
+  ApiStorefrontProductRoute: ApiStorefrontProductRoute,
+  ApiStorefrontSetupRoute: ApiStorefrontSetupRoute,
   ApiCommunicationsWebhooksResendRoute: ApiCommunicationsWebhooksResendRoute,
   ApiDocumentsBillIdRoute: ApiDocumentsBillIdRoute,
   ApiDocumentsCashSessionIdRoute: ApiDocumentsCashSessionIdRoute,
@@ -1468,6 +2030,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDocumentsInvoiceIdRoute: ApiDocumentsInvoiceIdRoute,
   ApiDocumentsPosReceiptIdRoute: ApiDocumentsPosReceiptIdRoute,
   ApiDocumentsQuickExpenseIdRoute: ApiDocumentsQuickExpenseIdRoute,
+  ApiStorefrontPaymentsWebhooksStripeRoute:
+    ApiStorefrontPaymentsWebhooksStripeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

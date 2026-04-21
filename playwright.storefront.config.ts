@@ -1,11 +1,11 @@
 import { defineConfig } from "@playwright/test";
 
-const proofPort = 4173;
-const baseURL = `http://127.0.0.1:${proofPort}`;
+const storefrontPort = 4174;
+const baseURL = `http://127.0.0.1:${storefrontPort}`;
 
 export default defineConfig({
   testDir: "./tests/regression",
-  testMatch: ["accounting-*.spec.ts"],
+  testMatch: ["storefront-proof.spec.ts"],
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
@@ -13,7 +13,7 @@ export default defineConfig({
     timeout: 10_000,
   },
   reporter: [["line"]],
-  outputDir: "test-results/playwright-proof",
+  outputDir: "test-results/playwright-storefront",
   use: {
     baseURL,
     headless: true,
@@ -22,7 +22,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command: "npm run dev:proof",
+    command: "npm run dev:storefront-proof",
     url: `${baseURL}/login`,
     timeout: 120_000,
     reuseExistingServer: false,

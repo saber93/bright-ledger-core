@@ -6,14 +6,18 @@
   "scripts": {
     "dev": "vite dev",
     "dev:proof": "vite dev --host 127.0.0.1 --port 4173 --strictPort",
+    "dev:storefront-proof": "vite dev --host 127.0.0.1 --port 4174 --strictPort",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepare:proof:controls": "node --import tsx tests/regression/prepare-control-proof.ts",
+    "prepare:proof:storefront": "node --import tsx tests/regression/prepare-storefront-proof.ts",
     "verify:proof": "node --import tsx tests/regression/verify-proof.ts",
+    "verify:storefront": "node --import tsx tests/regression/verify-storefront.ts",
     "test:proof": "npm run build && npm run verify:proof && npm run prepare:proof:controls && playwright test -c playwright.proof.config.ts",
+    "test:storefront": "npm run build && npm run prepare:proof:storefront && npm run verify:storefront && playwright test -c playwright.storefront.config.ts",
     "ci:finance": "npm run lint && npm run test:proof",
     "test:proof:install": "playwright install chromium"
   },

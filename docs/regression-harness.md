@@ -6,6 +6,8 @@ Date: 2026-04-18
 
 This harness turns the Group 6 proof smoke into a committed, repeatable regression suite for the validated accounting and operational surfaces before Group 7.
 
+For the dedicated storefront/customer-account regression harness added in Group 14, see [docs/storefront-regression-harness.md](./storefront-regression-harness.md).
+
 It covers:
 
 - Dashboard
